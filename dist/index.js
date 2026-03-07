@@ -1,0 +1,18 @@
+export { getCurriculumBand, isTransitionBand } from "./domain/curriculum.js";
+export { decide, decideWithResult, executeCommand, executeCommandWithResult, CommandError } from "./domain/commands.js";
+export { getChallengeConsequenceDeltas } from "./domain/challenge-consequences.js";
+export { assertValidGameEvent, isMathsTopic } from "./domain/events.js";
+export { evaluateActivationCondition, evaluateLatentConsequences } from "./domain/latent.js";
+export { createMathsPerformanceProfile, registerChallengeAttempt } from "./domain/remediation.js";
+export { applyEvent, reduceEvents } from "./domain/reducer.js";
+export { TEMPO_CADENCE, defaultAdvanceHoursForTempo, defaultEventBurstForTempo } from "./domain/tempo.js";
+export { GameService, loadEventLog, saveEventLog, reconstructStateFromEventLog } from "./application/game-service.js";
+export { executeEncounterBatch } from "./application/encounter-service.js";
+export { PrototypeApi, getStateSummary as getPrototypeStateSummary } from "./application/prototype-api.js";
+export { runScenario } from "./application/scenario-runner.js";
+export { DEFAULT_BALANCING_SCENARIO, sampleChallengeOutcome } from "./application/scenarios.js";
+export { runScenarioSweep, buildScenarioTelemetryReport, detectScenarioOutliers } from "./application/scenario-telemetry.js";
+export { createInitialGameState } from "./domain/state.js";
+export { loadContentBundle } from "./content/loader.js";
+export { validateContentBundle } from "./content/schema.js";
+export { selectCurrentContent, selectCurrentContentBatch, selectWeeklyContent } from "./content/selection.js";

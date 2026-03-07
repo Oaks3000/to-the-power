@@ -1,0 +1,846 @@
+{
+  "version": "0.1.0-vertical-slice",
+  "generatedAt": "2026-02-20",
+  "challenges": [
+    {
+      "id": "ch_y9_pct_swing_01",
+      "topic": "percentages",
+      "band": "Y9",
+      "mode": "decision",
+      "prompt": "Local polling rose from 42% to 48%. What is the percentage point increase?",
+      "answer": 6,
+      "tolerance": 0,
+      "unit": "pp",
+      "tags": [
+        "constituency",
+        "polling"
+      ]
+    },
+    {
+      "id": "ch_y9_ratio_leaflets_01",
+      "topic": "ratio_proportion",
+      "band": "Y9",
+      "mode": "decision",
+      "prompt": "Leaflets are split in ratio 3:2 across two wards. If Ward A gets 1,800, how many go to Ward B?",
+      "answer": 1200,
+      "tolerance": 0,
+      "unit": "leaflets",
+      "tags": [
+        "campaign"
+      ]
+    },
+    {
+      "id": "ch_y9_std_form_debt_01",
+      "topic": "standard_form",
+      "band": "Y9",
+      "mode": "gate",
+      "prompt": "Write 3,400,000,000 in standard form (coefficient only, power stored separately in system).",
+      "answer": 3.4,
+      "tolerance": 0.0001,
+      "unit": "coefficient",
+      "tags": [
+        "treasury"
+      ]
+    },
+    {
+      "id": "ch_y9_linear_whip_01",
+      "topic": "linear_equations",
+      "band": "Y9",
+      "mode": "gate",
+      "prompt": "Whip says loyalty target follows y = 2x + 30. For x = 8 weeks, what is y?",
+      "answer": 46,
+      "tolerance": 0,
+      "unit": "score",
+      "tags": [
+        "whip"
+      ]
+    },
+    {
+      "id": "ch_y9_prob_vote_01",
+      "topic": "basic_probability",
+      "band": "Y9",
+      "mode": "decision",
+      "prompt": "Chance of passing bill is 0.65. Express as percentage.",
+      "answer": 65,
+      "tolerance": 0,
+      "unit": "%",
+      "tags": [
+        "parliament"
+      ]
+    },
+    {
+      "id": "ch_y9_stats_wait_01",
+      "topic": "statistics_basic",
+      "band": "Y9",
+      "mode": "decision",
+      "prompt": "Median waiting times are 10, 14, 12, 16, 8 weeks. What is the median?",
+      "answer": 12,
+      "tolerance": 0,
+      "unit": "weeks",
+      "tags": [
+        "health"
+      ]
+    },
+    {
+      "id": "ch_y9_round_budget_01",
+      "topic": "rounding",
+      "band": "Y9",
+      "mode": "decision",
+      "prompt": "Round 12.748 million to 1 decimal place.",
+      "answer": 12.7,
+      "tolerance": 0.01,
+      "unit": "million",
+      "tags": [
+        "budget"
+      ]
+    },
+    {
+      "id": "ch_y9_graph_gradient_01",
+      "topic": "linear_graphs",
+      "band": "Y9",
+      "mode": "gate",
+      "prompt": "A line goes through (0,2) and (4,10). What is its gradient?",
+      "answer": 2,
+      "tolerance": 0,
+      "unit": "gradient",
+      "tags": [
+        "data"
+      ]
+    },
+    {
+      "id": "ch_y9_substitution_01",
+      "topic": "substitution",
+      "band": "Y9",
+      "mode": "decision",
+      "prompt": "For C = 5n + 20 and n = 12, find C.",
+      "answer": 80,
+      "tolerance": 0,
+      "unit": "cost",
+      "tags": [
+        "policy"
+      ]
+    },
+    {
+      "id": "ch_y9_seq_01",
+      "topic": "sequences_arithmetic",
+      "band": "Y9",
+      "mode": "decision",
+      "prompt": "Sequence is 7, 11, 15, ... What is term 8?",
+      "answer": 35,
+      "tolerance": 0,
+      "unit": "value",
+      "tags": [
+        "forecast"
+      ]
+    },
+    {
+      "id": "ch_y9_scatter_01",
+      "topic": "scatter_graphs",
+      "band": "Y9",
+      "mode": "decision",
+      "prompt": "A stronger positive correlation should be coded as 1 and weak/no as 0. Data shows clear strong positive trend. Code?",
+      "answer": 1,
+      "tolerance": 0,
+      "unit": "code",
+      "tags": [
+        "analysis"
+      ]
+    },
+    {
+      "id": "ch_y9_powers_01",
+      "topic": "powers_roots",
+      "band": "Y9",
+      "mode": "decision",
+      "prompt": "Calculate 3 squared.",
+      "answer": 9,
+      "tolerance": 0,
+      "unit": "value",
+      "tags": [
+        "core"
+      ]
+    },
+    {
+      "id": "ch_y9_ratio_committee_01",
+      "topic": "ratio_proportion",
+      "band": "Y9",
+      "mode": "gate",
+      "prompt": "Committee seats split 5:3. If majority faction gets 25 seats, minority gets how many?",
+      "answer": 15,
+      "tolerance": 0,
+      "unit": "seats",
+      "tags": [
+        "committee"
+      ]
+    },
+    {
+      "id": "ch_y9_pct_cut_01",
+      "topic": "percentages",
+      "band": "Y9",
+      "mode": "decision",
+      "prompt": "Department budget falls from 80 to 68 million. What percent decrease?",
+      "answer": 15,
+      "tolerance": 0.1,
+      "unit": "%",
+      "tags": [
+        "budget"
+      ]
+    },
+    {
+      "id": "ch_y9_stats_mean_01",
+      "topic": "statistics_basic",
+      "band": "Y9",
+      "mode": "decision",
+      "prompt": "Find mean of 6, 8, 10, 12, 14.",
+      "answer": 10,
+      "tolerance": 0,
+      "unit": "value",
+      "tags": [
+        "core"
+      ]
+    },
+    {
+      "id": "ch_y9_prob_single_01",
+      "topic": "basic_probability",
+      "band": "Y9",
+      "mode": "gate",
+      "prompt": "Probability of event is 1/4. As decimal?",
+      "answer": 0.25,
+      "tolerance": 0.0001,
+      "unit": "probability",
+      "tags": [
+        "risk"
+      ]
+    },
+    {
+      "id": "ch_y910_compound_01",
+      "topic": "compound_interest",
+      "band": "Y9-10",
+      "mode": "decision",
+      "prompt": "£1,000 grows by 5% for 2 years. Use A=P(1+r)^n.",
+      "answer": 1102.5,
+      "tolerance": 0.1,
+      "unit": "GBP",
+      "tags": [
+        "treasury"
+      ]
+    },
+    {
+      "id": "ch_y910_growth_01",
+      "topic": "growth_decay",
+      "band": "Y9-10",
+      "mode": "decision",
+      "prompt": "Population 200,000 grows 3% annually for one year. New population?",
+      "answer": 206000,
+      "tolerance": 1,
+      "unit": "people",
+      "tags": [
+        "home_office"
+      ]
+    },
+    {
+      "id": "ch_y910_simul_01",
+      "topic": "simultaneous_equations",
+      "band": "Y9-10",
+      "mode": "gate",
+      "prompt": "Solve: x + y = 14 and x - y = 2. Give x.",
+      "answer": 8,
+      "tolerance": 0,
+      "unit": "value",
+      "tags": [
+        "algebra"
+      ]
+    },
+    {
+      "id": "ch_y910_quad_01",
+      "topic": "quadratics_basic",
+      "band": "Y9-10",
+      "mode": "gate",
+      "prompt": "Solve x^2 - 5x + 6 = 0. Give the larger root.",
+      "answer": 3,
+      "tolerance": 0,
+      "unit": "root",
+      "tags": [
+        "algebra"
+      ]
+    },
+    {
+      "id": "ch_y910_tree_01",
+      "topic": "probability_trees",
+      "band": "Y9-10",
+      "mode": "decision",
+      "prompt": "A then B independent with probabilities 0.6 and 0.5. Probability of both?",
+      "answer": 0.3,
+      "tolerance": 0.0001,
+      "unit": "probability",
+      "tags": [
+        "risk"
+      ]
+    },
+    {
+      "id": "ch_y910_venn_01",
+      "topic": "venn_diagrams",
+      "band": "Y9-10",
+      "mode": "decision",
+      "prompt": "In 100 MPs, 60 support Bill A, 45 support Bill B, 25 support both. How many support at least one?",
+      "answer": 80,
+      "tolerance": 0,
+      "unit": "MPs",
+      "tags": [
+        "vote_math"
+      ]
+    },
+    {
+      "id": "ch_y910_hist_01",
+      "topic": "histograms",
+      "band": "Y9-10",
+      "mode": "decision",
+      "prompt": "Frequency density 4 over class width 5 gives frequency?",
+      "answer": 20,
+      "tolerance": 0,
+      "unit": "count",
+      "tags": [
+        "stats"
+      ]
+    },
+    {
+      "id": "ch_y910_direct_01",
+      "topic": "direct_inverse_proportion",
+      "band": "Y9-10",
+      "mode": "crisis",
+      "prompt": "y is directly proportional to x. y=18 when x=6. Find y when x=9.",
+      "answer": 27,
+      "tolerance": 0,
+      "unit": "value",
+      "timed": true,
+      "timerSeconds": 90,
+      "tags": [
+        "crisis"
+      ]
+    }
+  ],
+  "npcs": [
+    {
+      "id": "gerald_fosse",
+      "name": "Gerald Fosse",
+      "role": "Chief Whip",
+      "startingDisposition": 50
+    },
+    {
+      "id": "priya_sharma",
+      "name": "Priya Sharma",
+      "role": "Loyal Ally",
+      "startingDisposition": 68
+    },
+    {
+      "id": "helena_frost",
+      "name": "Dr. Helena Frost",
+      "role": "Treasury Spad",
+      "startingDisposition": 35
+    },
+    {
+      "id": "oliver_pemberton_cross",
+      "name": "Oliver Pemberton-Cross",
+      "role": "Spin Doctor",
+      "startingDisposition": 70
+    },
+    {
+      "id": "marcus_webb",
+      "name": "Marcus Webb",
+      "role": "Shadow Minister",
+      "startingDisposition": 25
+    },
+    {
+      "id": "vincent_harrold",
+      "name": "Vincent Harrold",
+      "role": "Press Baron",
+      "startingDisposition": 55
+    }
+  ],
+  "scenes": [
+    {
+      "id": "sc_whip_warning_01",
+      "npcId": "gerald_fosse",
+      "careerLevels": [
+        "backbencher",
+        "pps"
+      ],
+      "tempos": [
+        "parliamentary"
+      ],
+      "text": "Fosse slides over a whip sheet and taps one missing vote.",
+      "relationshipDelta": -2
+    },
+    {
+      "id": "sc_priya_support_01",
+      "npcId": "priya_sharma",
+      "careerLevels": [
+        "backbencher",
+        "pps",
+        "junior_minister"
+      ],
+      "tempos": [
+        "recess",
+        "parliamentary"
+      ],
+      "text": "Priya offers canvassing volunteers if you back her amendment.",
+      "relationshipDelta": 2
+    },
+    {
+      "id": "sc_frost_brief_01",
+      "npcId": "helena_frost",
+      "careerLevels": [
+        "pps",
+        "junior_minister",
+        "minister_of_state"
+      ],
+      "tempos": [
+        "parliamentary",
+        "crisis"
+      ],
+      "text": "Frost circles one equation and says, 'Start with the multiplier.'",
+      "relationshipDelta": 1
+    },
+    {
+      "id": "sc_oliver_spin_01",
+      "npcId": "oliver_pemberton_cross",
+      "careerLevels": [
+        "pps",
+        "junior_minister",
+        "minister_of_state"
+      ],
+      "tempos": [
+        "media_storm",
+        "crisis"
+      ],
+      "text": "Oliver drafts three headlines and marks the least damaging in green.",
+      "relationshipDelta": 1
+    },
+    {
+      "id": "sc_webb_attack_01",
+      "npcId": "marcus_webb",
+      "careerLevels": [
+        "junior_minister",
+        "minister_of_state",
+        "cabinet"
+      ],
+      "tempos": [
+        "parliamentary",
+        "media_storm"
+      ],
+      "text": "Webb quotes your own numbers back at you and asks who signed them off.",
+      "relationshipDelta": -2
+    },
+    {
+      "id": "sc_harrold_call_01",
+      "npcId": "vincent_harrold",
+      "careerLevels": [
+        "minister_of_state",
+        "cabinet",
+        "pm"
+      ],
+      "tempos": [
+        "media_storm",
+        "crisis"
+      ],
+      "text": "Harrold offers a friendly front page in return for early access to data.",
+      "relationshipDelta": -1
+    },
+    {
+      "id": "sc_backbench_crisis_whip_01",
+      "npcId": "gerald_fosse",
+      "careerLevels": [
+        "backbencher"
+      ],
+      "tempos": [
+        "crisis"
+      ],
+      "text": "Fosse corners you outside the chamber: vote math is collapsing by the hour.",
+      "relationshipDelta": -1
+    },
+    {
+      "id": "sc_backbench_media_spin_01",
+      "npcId": "oliver_pemberton_cross",
+      "careerLevels": [
+        "backbencher",
+        "pps"
+      ],
+      "tempos": [
+        "media_storm"
+      ],
+      "text": "Oliver slides a flash card of three numbers and mouths, say these and not the others.",
+      "relationshipDelta": 1
+    }
+  ],
+  "eventCards": [
+    {
+      "id": "ev_constituency_polling_01",
+      "title": "Marginal Seat Nerves",
+      "description": "Constituency swing model needed before weekend campaign push.",
+      "careerLevels": [
+        "backbencher"
+      ],
+      "tempos": [
+        "parliamentary",
+        "recess"
+      ],
+      "bands": [
+        "Y9"
+      ],
+      "candidateChallengeIds": [
+        "ch_y9_pct_swing_01",
+        "ch_y9_ratio_leaflets_01"
+      ],
+      "candidateSceneIds": [
+        "sc_priya_support_01",
+        "sc_whip_warning_01"
+      ],
+      "weight": 1.2
+    },
+    {
+      "id": "ev_committee_screening_01",
+      "title": "Committee Screening",
+      "description": "Whip's office requests arithmetic checks before shortlist confirmation.",
+      "careerLevels": [
+        "backbencher",
+        "pps"
+      ],
+      "tempos": [
+        "parliamentary"
+      ],
+      "bands": [
+        "Y9"
+      ],
+      "candidateChallengeIds": [
+        "ch_y9_linear_whip_01",
+        "ch_y9_ratio_committee_01",
+        "ch_y9_prob_single_01"
+      ],
+      "candidateSceneIds": [
+        "sc_whip_warning_01"
+      ],
+      "weight": 1.3
+    },
+    {
+      "id": "ev_local_service_brief_01",
+      "title": "Local Service Backlog",
+      "description": "Briefing pack compares waiting lists and local outcomes.",
+      "careerLevels": [
+        "backbencher",
+        "pps"
+      ],
+      "tempos": [
+        "parliamentary",
+        "recess"
+      ],
+      "bands": [
+        "Y9"
+      ],
+      "candidateChallengeIds": [
+        "ch_y9_stats_wait_01",
+        "ch_y9_stats_mean_01",
+        "ch_y9_round_budget_01"
+      ],
+      "candidateSceneIds": [
+        "sc_priya_support_01"
+      ],
+      "weight": 1
+    },
+    {
+      "id": "ev_treasury_shadow_task_01",
+      "title": "Treasury Shadow Task",
+      "description": "Frost asks for a quick debt-growth estimate before PM sees it.",
+      "careerLevels": [
+        "pps",
+        "junior_minister"
+      ],
+      "tempos": [
+        "parliamentary",
+        "crisis"
+      ],
+      "bands": [
+        "Y9",
+        "Y9-10"
+      ],
+      "candidateChallengeIds": [
+        "ch_y910_compound_01",
+        "ch_y910_growth_01",
+        "ch_y9_std_form_debt_01"
+      ],
+      "candidateSceneIds": [
+        "sc_frost_brief_01"
+      ],
+      "weight": 1.5
+    },
+    {
+      "id": "ev_crossbench_math_01",
+      "title": "Crossbench Arithmetic",
+      "description": "Vote margin depends on alliance maths by close of play.",
+      "careerLevels": [
+        "pps",
+        "junior_minister"
+      ],
+      "tempos": [
+        "parliamentary"
+      ],
+      "bands": [
+        "Y9",
+        "Y9-10"
+      ],
+      "candidateChallengeIds": [
+        "ch_y910_venn_01",
+        "ch_y910_tree_01",
+        "ch_y9_prob_vote_01"
+      ],
+      "candidateSceneIds": [
+        "sc_whip_warning_01",
+        "sc_priya_support_01"
+      ],
+      "weight": 1.4
+    },
+    {
+      "id": "ev_media_numbers_01",
+      "title": "Numbers on Air",
+      "description": "A live interview forces rapid figures under pressure.",
+      "careerLevels": [
+        "pps",
+        "junior_minister",
+        "minister_of_state"
+      ],
+      "tempos": [
+        "media_storm",
+        "crisis"
+      ],
+      "bands": [
+        "Y9",
+        "Y9-10"
+      ],
+      "candidateChallengeIds": [
+        "ch_y910_direct_01",
+        "ch_y9_graph_gradient_01"
+      ],
+      "candidateSceneIds": [
+        "sc_oliver_spin_01",
+        "sc_webb_attack_01"
+      ],
+      "weight": 1.6
+    },
+    {
+      "id": "ev_department_tradeoff_01",
+      "title": "Department Trade-Off",
+      "description": "Two funding promises conflict; model both before briefing room opens.",
+      "careerLevels": [
+        "junior_minister",
+        "minister_of_state"
+      ],
+      "tempos": [
+        "parliamentary",
+        "crisis"
+      ],
+      "bands": [
+        "Y9-10"
+      ],
+      "candidateChallengeIds": [
+        "ch_y910_simul_01",
+        "ch_y910_quad_01",
+        "ch_y910_hist_01"
+      ],
+      "candidateSceneIds": [
+        "sc_frost_brief_01",
+        "sc_webb_attack_01"
+      ],
+      "weight": 1.7
+    },
+    {
+      "id": "ev_budget_clip_01",
+      "title": "Unexpected Budget Clip",
+      "description": "Mid-cycle cut requires fast percentage and ratio reallocations.",
+      "careerLevels": [
+        "pps",
+        "junior_minister",
+        "minister_of_state"
+      ],
+      "tempos": [
+        "crisis"
+      ],
+      "bands": [
+        "Y9",
+        "Y9-10"
+      ],
+      "candidateChallengeIds": [
+        "ch_y9_pct_cut_01",
+        "ch_y9_ratio_leaflets_01",
+        "ch_y910_growth_01"
+      ],
+      "candidateSceneIds": [
+        "sc_frost_brief_01",
+        "sc_oliver_spin_01"
+      ],
+      "weight": 1.8
+    },
+    {
+      "id": "ev_shadow_scrutiny_01",
+      "title": "Shadow Scrutiny",
+      "description": "Opposition picks one weak statistic and pushes it hard.",
+      "careerLevels": [
+        "junior_minister",
+        "minister_of_state",
+        "cabinet"
+      ],
+      "tempos": [
+        "parliamentary",
+        "media_storm"
+      ],
+      "bands": [
+        "Y9-10"
+      ],
+      "candidateChallengeIds": [
+        "ch_y910_hist_01",
+        "ch_y910_venn_01",
+        "ch_y9_scatter_01"
+      ],
+      "candidateSceneIds": [
+        "sc_webb_attack_01"
+      ],
+      "weight": 1.5
+    },
+    {
+      "id": "ev_press_bargain_01",
+      "title": "Press Bargain",
+      "description": "A soft profile is offered if your figures withstand scrutiny.",
+      "careerLevels": [
+        "minister_of_state",
+        "cabinet",
+        "pm"
+      ],
+      "tempos": [
+        "media_storm",
+        "crisis"
+      ],
+      "bands": [
+        "Y9-10"
+      ],
+      "candidateChallengeIds": [
+        "ch_y910_tree_01",
+        "ch_y910_direct_01"
+      ],
+      "candidateSceneIds": [
+        "sc_harrold_call_01",
+        "sc_oliver_spin_01"
+      ],
+      "weight": 1.9
+    },
+    {
+      "id": "ev_backbench_crisis_whipcount_01",
+      "title": "Emergency Whipcount",
+      "description": "A late rebellion threat forces immediate headcount arithmetic before division bells.",
+      "careerLevels": [
+        "backbencher"
+      ],
+      "tempos": [
+        "crisis"
+      ],
+      "bands": [
+        "Y9"
+      ],
+      "candidateChallengeIds": [
+        "ch_y9_prob_vote_01",
+        "ch_y9_ratio_committee_01",
+        "ch_y9_linear_whip_01"
+      ],
+      "candidateSceneIds": [
+        "sc_backbench_crisis_whip_01",
+        "sc_whip_warning_01"
+      ],
+      "weight": 1.7
+    },
+    {
+      "id": "ev_backbench_media_scrum_01",
+      "title": "Lobby Scrum Numbers",
+      "description": "Cameras are live and your figure gets challenged before your adviser reaches you.",
+      "careerLevels": [
+        "backbencher",
+        "pps"
+      ],
+      "tempos": [
+        "media_storm"
+      ],
+      "bands": [
+        "Y9"
+      ],
+      "candidateChallengeIds": [
+        "ch_y9_pct_swing_01",
+        "ch_y9_round_budget_01",
+        "ch_y9_stats_mean_01"
+      ],
+      "candidateSceneIds": [
+        "sc_backbench_media_spin_01",
+        "sc_oliver_spin_01"
+      ],
+      "weight": 1.6
+    },
+    {
+      "id": "ev_pps_crisis_briefing_01",
+      "title": "PPS Rapid Brief",
+      "description": "You have minutes to reconcile conflicting figures before ministerial line to take is set.",
+      "careerLevels": [
+        "pps"
+      ],
+      "tempos": [
+        "crisis"
+      ],
+      "bands": [
+        "Y9",
+        "Y9-10"
+      ],
+      "candidateChallengeIds": [
+        "ch_y910_tree_01",
+        "ch_y9_graph_gradient_01",
+        "ch_y910_growth_01"
+      ],
+      "candidateSceneIds": [
+        "sc_frost_brief_01",
+        "sc_backbench_media_spin_01"
+      ],
+      "weight": 1.8
+    }
+  ],
+  "briefings": [
+    {
+      "id": "br_frost_compound_01",
+      "advisor": "Dr. Helena Frost",
+      "topic": "compound_interest",
+      "bands": [
+        "Y9-10"
+      ],
+      "text": "Use multipliers first; round only at the end."
+    },
+    {
+      "id": "br_fosse_probability_01",
+      "advisor": "Gerald Fosse",
+      "topic": "basic_probability",
+      "bands": [
+        "Y9",
+        "Y9-10"
+      ],
+      "text": "Count heads, then count rebels, then remove wishful thinking."
+    },
+    {
+      "id": "br_oliver_stats_01",
+      "advisor": "Oliver Pemberton-Cross",
+      "topic": "statistics_basic",
+      "bands": [
+        "Y9"
+      ],
+      "text": "One clean number beats five noisy ones on camera."
+    },
+    {
+      "id": "br_chen_tree_01",
+      "advisor": "Zara Chen",
+      "topic": "probability_trees",
+      "bands": [
+        "Y9-10"
+      ],
+      "text": "Label every branch, then multiply along paths before adding outcomes."
+    }
+  ]
+}

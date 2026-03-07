@@ -1,0 +1,18 @@
+{
+  "name": "to-the-power",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "check": "tsc -p tsconfig.json --noEmit",
+    "test": "npm run build && node --test \"dist/tests/*.test.js\"",
+    "simulate": "npm run build && node dist/scripts/simulate.js",
+    "scenario": "npm run build && node dist/scripts/scenario-runner.js",
+    "balance:baseline": "npm run build && node dist/scripts/balance-baseline.js"
+  },
+  "devDependencies": {
+    "@types/node": "^25.3.0",
+    "typescript": "^5.9.3"
+  }
+}
