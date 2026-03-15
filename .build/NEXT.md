@@ -1,32 +1,26 @@
 ---
 project: "To The Power"
 type: "build"
-lastUpdated: "2026-03-07"
+lastUpdated: "2026-03-12"
 ---
 
 # To The Power — Next Steps
 
 ## Immediate (This Session / Week)
 
-1. Build Phase 2 prototype shell that consumes `PrototypeApi` directly.
-2. Implement minimal UI flow:
-   - packet batch display
-   - challenge submit
-   - advance time
-   - state summary panel
-3. Add integration tests around prototype API usage patterns from UI state transitions.
-4. Add cohort-gate baseline check to CI-style command workflow.
+1. Start [#23](https://github.com/Oaks3000/to-the-power/issues/23) to formalize playtest loop thresholds and evidence template.
+2. Begin [#20](https://github.com/Oaks3000/to-the-power/issues/20) accessibility baseline hardening gate definition.
+3. Scope [#21](https://github.com/Oaks3000/to-the-power/issues/21) browser regression harness implementation details.
 
 ## Short Term (Next 2–4 Weeks)
 
-1. Expand content density in crisis/media and mid-career routes.
-2. Implement role progression gates and ending detection in domain flow.
-3. Add snapshot/golden tests for full scenario runs at fixed seeds.
-4. Add leaderboard/legacy scoring model skeleton.
-5. Scope persistence strategy for browser prototype sessions.
+1. Complete [#20](https://github.com/Oaks3000/to-the-power/issues/20) accessibility baseline and hardening gates.
+2. Build [#21](https://github.com/Oaks3000/to-the-power/issues/21) browser regression harness for shell core flow.
+3. Deliver [#22](https://github.com/Oaks3000/to-the-power/issues/22) retrospective/leaderboard productization slice.
+4. Recalculate Phase 4 release gates from playtest and harness results.
 
 ## Questions / Unknowns
 
-- Final target values for cohort gates over larger sweep sizes (200+ seeds).
-- Which role branch gets first polished narrative path in UI.
-- Whether to normalize remediation targets by challenge volume by default.
+- Which concrete release gate thresholds should be used for Tier 1 shell sign-off after broader playtests?
+- Whether additional domain/API surface is required before scaling from Backbencher to PPS/Junior Minister shells.
+- When to switch runtime defaults from `vertical-slice.json` to `content/index.json` after parity confidence.

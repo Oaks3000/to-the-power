@@ -1,0 +1,8 @@
+{
+  "version": "0.2.0-phase4-kickoff",
+  "generatedAt": "2026-03-12",
+  "packs": [
+    "packs/pack-core-vertical-slice.json",
+    "packs/pack-phase4-pps-jm-crisis-media.json"
+  ]
+}
