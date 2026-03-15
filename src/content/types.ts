@@ -59,3 +59,19 @@ export interface ContentBundle {
   eventCards: EventCardContent[];
   briefings: BriefingContent[];
 }
+
+export interface ContentPack {
+  id: string;
+  description?: string;
+  challenges: ChallengeContent[];
+  npcs: NPCContent[];
+  scenes: SceneContent[];
+  eventCards: EventCardContent[];
+  briefings: BriefingContent[];
+}
+
+export interface ContentManifest {
+  version: string;
+  generatedAt: string;
+  packs: string[];
+}

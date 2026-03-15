@@ -1,0 +1,238 @@
+{
+  "id": "phase4-pps-jm-crisis-media-v1",
+  "description": "Phase 4 kickoff content increment focused on PPS/Junior Minister crisis and media-storm density.",
+  "challenges": [
+    {
+      "id": "ch_phase4_pps_crisis_bounds_01",
+      "topic": "bounds",
+      "band": "Y9",
+      "mode": "crisis",
+      "prompt": "Department estimate is 48.6 million with a tolerance of +/-0.4 million. What is the upper bound?",
+      "answer": 49,
+      "tolerance": 0.05,
+      "unit": "million",
+      "tags": ["pps", "crisis", "department"]
+    },
+    {
+      "id": "ch_phase4_pps_media_indices_01",
+      "topic": "indices",
+      "band": "Y9",
+      "mode": "decision",
+      "prompt": "A media pressure index is recorded as 2^5. Calculate the index value.",
+      "answer": 32,
+      "tolerance": 0,
+      "unit": "index",
+      "tags": ["pps", "media"]
+    },
+    {
+      "id": "ch_phase4_pps_crisis_ineq_01",
+      "topic": "inequalities",
+      "band": "Y9",
+      "mode": "gate",
+      "prompt": "You need at least 42 MPs and already have 29. Solve 29 + x >= 42. What is the minimum x?",
+      "answer": 13,
+      "tolerance": 0,
+      "unit": "MPs",
+      "tags": ["pps", "whips"]
+    },
+    {
+      "id": "ch_phase4_pps_crisis_rate_01",
+      "topic": "rates_of_change_linear",
+      "band": "Y9-10",
+      "mode": "crisis",
+      "prompt": "Case backlog rises from 840 to 1,020 over 6 hours. What is the hourly rate of increase?",
+      "answer": 30,
+      "tolerance": 0,
+      "unit": "cases/hour",
+      "tags": ["pps", "operations", "crisis"]
+    },
+    {
+      "id": "ch_phase4_jm_crisis_prob_tree_01",
+      "topic": "probability_trees",
+      "band": "Y9-10",
+      "mode": "crisis",
+      "prompt": "Briefing says chance of disruption is 0.3 and chance of major impact given disruption is 0.4. What is P(disruption and major impact)?",
+      "answer": 0.12,
+      "tolerance": 0.0001,
+      "unit": "probability",
+      "tags": ["junior_minister", "risk"]
+    },
+    {
+      "id": "ch_phase4_jm_media_cfreq_01",
+      "topic": "cumulative_frequency",
+      "band": "Y9-10",
+      "mode": "decision",
+      "prompt": "A cumulative chart shows 68 stories at or below tone score 5 out of 100. What percentage is at or below 5?",
+      "answer": 68,
+      "tolerance": 0,
+      "unit": "%",
+      "tags": ["junior_minister", "media"]
+    },
+    {
+      "id": "ch_phase4_jm_crisis_functions_01",
+      "topic": "functions",
+      "band": "Y10-11",
+      "mode": "gate",
+      "prompt": "Policy response function is f(x) = 3x + 4. Evaluate f(12).",
+      "answer": 40,
+      "tolerance": 0,
+      "unit": "score",
+      "tags": ["junior_minister", "policy"]
+    },
+    {
+      "id": "ch_phase4_jm_media_critique_01",
+      "topic": "statistical_critique",
+      "band": "Y10-11",
+      "mode": "decision",
+      "prompt": "A headline compares a sample of 20 with a national claim. Enter 1 if the sample is likely too small, else 0.",
+      "answer": 1,
+      "tolerance": 0,
+      "unit": "flag",
+      "tags": ["junior_minister", "media", "analysis"]
+    }
+  ],
+  "npcs": [],
+  "scenes": [
+    {
+      "id": "sc_phase4_pps_war_room_01",
+      "npcId": "oliver_pemberton_cross",
+      "careerLevels": ["pps"],
+      "tempos": ["crisis", "media_storm"],
+      "text": "Oliver slides a live dashboard across the desk: \"Numbers are moving faster than statements. Lock the line before noon.\"",
+      "relationshipDelta": -1
+    },
+    {
+      "id": "sc_phase4_pps_whips_corridor_01",
+      "npcId": "gerald_fosse",
+      "careerLevels": ["pps"],
+      "tempos": ["crisis"],
+      "text": "Gerald keeps his voice low: \"I can hold one rebellion, not two. Give me clean arithmetic and now.\"",
+      "relationshipDelta": 1
+    },
+    {
+      "id": "sc_phase4_jm_broadcast_drill_01",
+      "npcId": "helena_frost",
+      "careerLevels": ["junior_minister"],
+      "tempos": ["media_storm"],
+      "text": "Helena circles a quote on your draft: \"If you can't defend the number on-air, don't use it.\"",
+      "relationshipDelta": 1
+    },
+    {
+      "id": "sc_phase4_jm_select_committee_ping_01",
+      "npcId": "marcus_webb",
+      "careerLevels": ["junior_minister"],
+      "tempos": ["crisis", "media_storm"],
+      "text": "Marcus has already posted: \"Committee wants your figures reconciled before questions. Clock is running.\"",
+      "relationshipDelta": -2
+    }
+  ],
+  "eventCards": [
+    {
+      "id": "ev_phase4_pps_crisis_flood_grid_01",
+      "title": "Flood Grid Breakdown",
+      "description": "Regional response maps conflict and whips demand a single number before PMQs.",
+      "careerLevels": ["pps"],
+      "tempos": ["crisis"],
+      "bands": ["Y9"],
+      "candidateChallengeIds": [
+        "ch_phase4_pps_crisis_bounds_01",
+        "ch_phase4_pps_crisis_rate_01",
+        "ch_y9_round_budget_01"
+      ],
+      "candidateSceneIds": [
+        "sc_phase4_pps_whips_corridor_01",
+        "sc_phase4_pps_war_room_01"
+      ],
+      "weight": 1.45
+    },
+    {
+      "id": "ev_phase4_pps_media_clipcycle_01",
+      "title": "Clip Cycle Escalation",
+      "description": "A selective media clip is trending and your office must counter with numerically solid framing.",
+      "careerLevels": ["pps"],
+      "tempos": ["media_storm"],
+      "bands": ["Y9"],
+      "candidateChallengeIds": [
+        "ch_phase4_pps_media_indices_01",
+        "ch_y9_pct_cut_01"
+      ],
+      "candidateSceneIds": [
+        "sc_phase4_pps_war_room_01",
+        "sc_oliver_spin_01"
+      ],
+      "weight": 1.25
+    },
+    {
+      "id": "ev_phase4_pps_crisis_whipline_01",
+      "title": "Whipline Arithmetic",
+      "description": "Late defections force a rapid inequality check before the division bell.",
+      "careerLevels": ["pps"],
+      "tempos": ["crisis"],
+      "bands": ["Y9"],
+      "candidateChallengeIds": [
+        "ch_phase4_pps_crisis_ineq_01",
+        "ch_y9_linear_whip_01"
+      ],
+      "candidateSceneIds": [
+        "sc_phase4_pps_whips_corridor_01",
+        "sc_whip_warning_01"
+      ],
+      "weight": 1.3
+    },
+    {
+      "id": "ev_phase4_jm_crisis_supply_01",
+      "title": "Supply Chain Red Window",
+      "description": "Department logistics has entered a red state and ministers need a risk-weighted update.",
+      "careerLevels": ["junior_minister"],
+      "tempos": ["crisis"],
+      "bands": ["Y9-10", "Y10-11"],
+      "candidateChallengeIds": [
+        "ch_phase4_jm_crisis_prob_tree_01",
+        "ch_phase4_pps_crisis_rate_01",
+        "ch_y910_growth_01"
+      ],
+      "candidateSceneIds": [
+        "sc_phase4_jm_select_committee_ping_01",
+        "sc_harrold_call_01"
+      ],
+      "weight": 1.5
+    },
+    {
+      "id": "ev_phase4_jm_media_forensics_01",
+      "title": "Broadcast Forensics Panel",
+      "description": "A live panel will challenge your denominator and sampling logic in real time.",
+      "careerLevels": ["junior_minister"],
+      "tempos": ["media_storm"],
+      "bands": ["Y9-10", "Y10-11"],
+      "candidateChallengeIds": [
+        "ch_phase4_jm_media_cfreq_01",
+        "ch_phase4_jm_media_critique_01",
+        "ch_y910_compound_01"
+      ],
+      "candidateSceneIds": [
+        "sc_phase4_jm_broadcast_drill_01",
+        "sc_phase4_jm_select_committee_ping_01"
+      ],
+      "weight": 1.4
+    },
+    {
+      "id": "ev_phase4_jm_crisis_committee_sheet_01",
+      "title": "Committee Numbers Sheet",
+      "description": "Cross-party committee requests a unified response function before publication.",
+      "careerLevels": ["junior_minister"],
+      "tempos": ["crisis", "media_storm"],
+      "bands": ["Y9-10", "Y10-11"],
+      "candidateChallengeIds": [
+        "ch_phase4_jm_crisis_functions_01",
+        "ch_phase4_jm_media_critique_01",
+        "ch_y910_simul_01"
+      ],
+      "candidateSceneIds": [
+        "sc_phase4_jm_select_committee_ping_01",
+        "sc_frost_brief_01"
+      ],
+      "weight": 1.35
+    }
+  ],
+  "briefings": []
+}

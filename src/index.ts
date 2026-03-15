@@ -58,6 +58,8 @@ export type {
   BriefingContent,
   ChallengeContent,
   ContentBundle,
+  ContentManifest,
+  ContentPack,
   EventCardContent,
   NPCContent,
   SceneContent
