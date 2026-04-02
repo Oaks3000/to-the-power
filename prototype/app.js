@@ -285,6 +285,60 @@ function playPressureCue(summary, reasonKey) {
   elements.audioState.textContent = `${cueLabel} played.`;
 }
 
+function playPaperRustleCue(surfaceLabel) {
+  if (!audioEnabled) {
+    elements.audioState.textContent = `${surfaceLabel} opened. Sound is off; visual paper cue shown.`;
+    return;
+  }
+
+  if (reducedMotionEnabled) {
+    elements.audioState.textContent = `${surfaceLabel} opened. Reduced-motion mode skips rustle audio.`;
+    return;
+  }
+
+  const ctx = ensureAudioContext();
+  if (!ctx) {
+    elements.audioState.textContent = `${surfaceLabel} opened. Sound unavailable; visual paper cue shown.`;
+    return;
+  }
+  if (ctx.state === "suspended") {
+    ctx.resume().catch(() => {});
+  }
+
+  const now = ctx.currentTime;
+  const durationSeconds = 0.18;
+  const sampleCount = Math.max(1, Math.floor(ctx.sampleRate * durationSeconds));
+  const buffer = ctx.createBuffer(1, sampleCount, ctx.sampleRate);
+  const data = buffer.getChannelData(0);
+
+  for (let index = 0; index < sampleCount; index += 1) {
+    const progress = index / sampleCount;
+    const envelope = Math.pow(1 - progress, 1.8);
+    data[index] = (Math.random() * 2 - 1) * envelope;
+  }
+
+  const source = ctx.createBufferSource();
+  source.buffer = buffer;
+
+  const filter = ctx.createBiquadFilter();
+  filter.type = "bandpass";
+  filter.frequency.setValueAtTime(1450, now);
+  filter.Q.setValueAtTime(0.7, now);
+
+  const gain = ctx.createGain();
+  gain.gain.setValueAtTime(0.0001, now);
+  gain.gain.exponentialRampToValueAtTime(0.06, now + 0.018);
+  gain.gain.exponentialRampToValueAtTime(0.0001, now + durationSeconds);
+
+  source.connect(filter);
+  filter.connect(gain);
+  gain.connect(ctx.destination);
+
+  source.start(now);
+  source.stop(now + durationSeconds);
+  elements.audioState.textContent = `${surfaceLabel} rustle cue played.`;
+}
+
 function signedDelta(value) {
   if (value === 0) {
     return "0";
@@ -1244,14 +1298,17 @@ function wireEvents() {
   });
   elements.recordAnchor.addEventListener("click", () => {
     focusSurface(elements.recordSurface);
+    playPaperRustleCue("The Record");
     setStatus("The Record anchor opened official summary surface.");
   });
   elements.bubbleAnchor.addEventListener("click", () => {
     focusSurface(elements.bubbleSurface);
+    playPaperRustleCue("The Bubble");
     setStatus("The Bubble anchor opened narrative event wire.");
   });
   elements.supplementAnchor.addEventListener("click", () => {
     focusSurface(elements.supplementSurface);
+    playPaperRustleCue("The Supplement");
     setStatus("The Supplement anchor opened optional enrichment surface.");
   });
   elements.lampAnchor.addEventListener("click", () => {
