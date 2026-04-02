@@ -9,7 +9,7 @@ lastUpdated: "2026-04-02"
 
 A British political career simulation that teaches GCSE mathematics through consequential Westminster decision-making.
 
-## Current Phase: Phase 4 — Content Expansion + Release Hardening
+## Current Phase: Phase 5 — Scale + Outcomes (kickoff)
 
 ### Phase 1: Domain + Engine Foundations (complete)
 - 1.0 Event-sourced architecture ✅
@@ -63,6 +63,11 @@ A British political career simulation that teaches GCSE mathematics through cons
 - Accessibility gates artifact: `.build/ACCESSIBILITY_RELEASE_GATES.md`
 - Browser regression command: `npm run prototype:regression`
 - Retrospective/leaderboard model artifact: `.build/RETROSPECTIVE_LEADERBOARD_MODEL.md`
+
+### Phase 5: Scale + Outcomes
+- 5.1 Tier 2 + Tier 3 shell scaling ⏳ (issue [#28](https://github.com/Oaks3000/to-the-power/issues/28))
+- 5.2 Extended ending-state coverage ⏳ (issue [#29](https://github.com/Oaks3000/to-the-power/issues/29))
+- 5.3 Retrospective/leaderboard multi-run polish ⏳ (issue [#30](https://github.com/Oaks3000/to-the-power/issues/30))
 
 ## Out of Scope (for now)
 

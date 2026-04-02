@@ -2,10 +2,10 @@
 project: "To The Power"
 type: "build"
 priority: 1
-phase: "Phase 4 — Content Expansion + Release Hardening"
+phase: "Phase 5 — Scale + Outcomes (kickoff)"
 progress: 0
-overallProgressEstimate: 92
-phaseIssueProgress: "6/6"
+overallProgressEstimate: 93
+phaseIssueProgress: "0/3"
 lastUpdated: "2026-04-02"
 lastTouched: "2026-04-02"
 status: "in-progress"
@@ -13,9 +13,9 @@ status: "in-progress"
 
 # To The Power — Current Status
 
-**Phase:** Phase 4 — Content Expansion + Release Hardening
-**Issue-tracked Phase Progress:** 100% (6 closed / 6 tracked issues)
-**Overall Project Progress (estimated):** 92%
+**Phase:** Phase 5 — Scale + Outcomes (kickoff)
+**Issue-tracked Phase Progress:** 0% (0 closed / 3 tracked issues)
+**Overall Project Progress (estimated):** 93%
 **Last Updated:** 2026-04-02
 
 ## What's Done
@@ -34,10 +34,19 @@ status: "in-progress"
   - [#21](https://github.com/Oaks3000/to-the-power/issues/21) ✅
   - [#22](https://github.com/Oaks3000/to-the-power/issues/22) ✅
   - [#23](https://github.com/Oaks3000/to-the-power/issues/23) ✅
+- Post-Phase-4 backlog cue delivered:
+  - [#25](https://github.com/Oaks3000/to-the-power/issues/25) ✅
+- Phase 4 closeout handover artifact added:
+  - `.build/HANDOVER_2026-04-02_PHASE4_CLOSEOUT.md`
+- Phase 5 kickoff issue set opened:
+  - [#28](https://github.com/Oaks3000/to-the-power/issues/28)
+  - [#29](https://github.com/Oaks3000/to-the-power/issues/29)
+  - [#30](https://github.com/Oaks3000/to-the-power/issues/30)
 
 ## What's In Progress
 
-- Phase 4 execution closeout and handover packaging.
+- Phase 5 planning-to-implementation transition.
+- Sequencing first implementation slice for #28/#29/#30.
 - #19 implementation complete and closed:
   - PPS/Junior Minister crisis/media pack increment delivered (+8 challenges, +6 event cards, +4 scenes)
   - manifest loading support + parity/volume tests delivered
@@ -60,13 +69,18 @@ status: "in-progress"
 
 ## Blockers
 
-- No technical blockers.
+- Baseline drift on clean `main`:
+  - `npm test` passes.
+  - `npm run accessibility:gate` and `npm run prototype:regression` scripts are missing from clean `main` package scripts.
+  - Requires script alignment pass before those gates can be used as mainline baseline checks.
 
 ## Issue Tracking Snapshot
 
 - Closed (Phase 3): [#6](https://github.com/Oaks3000/to-the-power/issues/6), [#7](https://github.com/Oaks3000/to-the-power/issues/7), [#8](https://github.com/Oaks3000/to-the-power/issues/8), [#9](https://github.com/Oaks3000/to-the-power/issues/9), [#10](https://github.com/Oaks3000/to-the-power/issues/10), [#11](https://github.com/Oaks3000/to-the-power/issues/11), [#12](https://github.com/Oaks3000/to-the-power/issues/12), [#13](https://github.com/Oaks3000/to-the-power/issues/13), [#14](https://github.com/Oaks3000/to-the-power/issues/14), [#15](https://github.com/Oaks3000/to-the-power/issues/15), [#16](https://github.com/Oaks3000/to-the-power/issues/16), [#17](https://github.com/Oaks3000/to-the-power/issues/17)
 - Closed (Phase 4): [#18](https://github.com/Oaks3000/to-the-power/issues/18), [#19](https://github.com/Oaks3000/to-the-power/issues/19), [#20](https://github.com/Oaks3000/to-the-power/issues/20), [#21](https://github.com/Oaks3000/to-the-power/issues/21), [#22](https://github.com/Oaks3000/to-the-power/issues/22), [#23](https://github.com/Oaks3000/to-the-power/issues/23)
 - Open (Phase 4): None
+- Closed (Post-Phase-4 backlog): [#25](https://github.com/Oaks3000/to-the-power/issues/25)
+- Open (Phase 5): [#28](https://github.com/Oaks3000/to-the-power/issues/28), [#29](https://github.com/Oaks3000/to-the-power/issues/29), [#30](https://github.com/Oaks3000/to-the-power/issues/30)
 
 ## Notes
 
@@ -82,3 +96,7 @@ status: "in-progress"
 - #20 final acceptance evidence was posted and #20 closed on 2026-04-02.
 - #21 final acceptance evidence was posted and #21 closed on 2026-04-02.
 - #22 final acceptance evidence was posted and #22 closed on 2026-04-02.
+- #25 final acceptance evidence was merged via PR #27 and issue closed on 2026-04-02.
+- Clean `main` baseline sweep executed from isolated worktree on 2026-04-02:
+  - `npm test` PASS
+  - gate scripts missing on clean main (`accessibility:gate`, `prototype:regression`)
