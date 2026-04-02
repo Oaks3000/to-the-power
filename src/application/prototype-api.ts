@@ -1,6 +1,8 @@
 import { resolve } from "node:path";
 import type { CurrentSelection } from "../content/selection.js";
 import { GameService } from "./game-service.js";
+import { buildRetrospectiveReport } from "./retrospective.js";
+import type { RetrospectiveReport } from "./retrospective.js";
 import type { CommandResult, CommandWarning, GameCommand } from "../domain/commands.js";
 import type { ChallengeMode, GameEvent, GameState, MathsTopic, Rng, SchoolYear } from "../domain/types.js";
 
@@ -58,6 +60,11 @@ export interface PrototypeCommandResponse {
   summary: PrototypeStateSummary;
   warnings: CommandWarning[];
   events: GameEvent[];
+}
+
+export interface PrototypeRetrospectiveInput {
+  runId?: string;
+  playerAlias?: string;
 }
 
 function mapPacket(selection: CurrentSelection): PrototypePacket {
@@ -183,5 +190,9 @@ export class PrototypeApi {
 
   getStateSummary(): PrototypeStateSummary {
     return getStateSummary(this.service.getState());
+  }
+
+  getRetrospectiveReport(input: PrototypeRetrospectiveInput = {}): RetrospectiveReport {
+    return buildRetrospectiveReport(this.service.getState(), input);
   }
 }

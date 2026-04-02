@@ -2,7 +2,7 @@
 project: "To The Power"
 type: "build"
 createdAt: "2026-03-03"
-lastUpdated: "2026-03-12"
+lastUpdated: "2026-04-02"
 ---
 
 # To The Power — Roadmap
@@ -52,13 +52,17 @@ A British political career simulation that teaches GCSE mathematics through cons
   - Visual direction lock: near-photoreal (stylised-real) desk presentation is required across all 3.6 slices, with full systemization in 3.6.5.
 
 ### Phase 4: Content Expansion + Release Hardening
-- 4.1 Phase 4 execution map + content strategy lock ⏳ (issue [#18](https://github.com/Oaks3000/to-the-power/issues/18))
-- 4.2 Content expansion: crisis/media + mid-career routes ⏳ (issue [#19](https://github.com/Oaks3000/to-the-power/issues/19))
-- 4.3 Release accessibility baseline + hardening gates ⏳ (issue [#20](https://github.com/Oaks3000/to-the-power/issues/20))
-- 4.4 Browser regression harness for desk shell ⏳ (issue [#21](https://github.com/Oaks3000/to-the-power/issues/21))
-- 4.5 Retrospective and leaderboard productization ⏳ (issue [#22](https://github.com/Oaks3000/to-the-power/issues/22))
-- 4.6 Playtest loop and release threshold framework ⏳ (issue [#23](https://github.com/Oaks3000/to-the-power/issues/23))
+- 4.1 Phase 4 execution map + content strategy lock ✅ (issue [#18](https://github.com/Oaks3000/to-the-power/issues/18))
+- 4.2 Content expansion: crisis/media + mid-career routes ✅ (issue [#19](https://github.com/Oaks3000/to-the-power/issues/19))
+- 4.3 Release accessibility baseline + hardening gates ✅ (issue [#20](https://github.com/Oaks3000/to-the-power/issues/20))
+- 4.4 Browser regression harness for desk shell ✅ (issue [#21](https://github.com/Oaks3000/to-the-power/issues/21))
+- 4.5 Retrospective and leaderboard productization ✅ (issue [#22](https://github.com/Oaks3000/to-the-power/issues/22))
+- 4.6 Playtest loop and release threshold framework ✅ (issue [#23](https://github.com/Oaks3000/to-the-power/issues/23))
 - Execution/dependency map artifact: `.build/PHASE4_EXECUTION_MAP.md`
+- Playtest framework artifact: `.build/PHASE4_PLAYTEST_LOOP_FRAMEWORK.md`
+- Accessibility gates artifact: `.build/ACCESSIBILITY_RELEASE_GATES.md`
+- Browser regression command: `npm run prototype:regression`
+- Retrospective/leaderboard model artifact: `.build/RETROSPECTIVE_LEADERBOARD_MODEL.md`
 
 ## Out of Scope (for now)
 

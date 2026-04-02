@@ -1,5 +1,6 @@
 import { resolve } from "node:path";
 import { GameService } from "./game-service.js";
+import { buildRetrospectiveReport } from "./retrospective.js";
 function mapPacket(selection) {
     const packet = { band: selection.band };
     if (selection.eventCard) {
@@ -99,5 +100,8 @@ export class PrototypeApi {
     }
     getStateSummary() {
         return getStateSummary(this.service.getState());
+    }
+    getRetrospectiveReport(input = {}) {
+        return buildRetrospectiveReport(this.service.getState(), input);
     }
 }

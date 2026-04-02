@@ -53,3 +53,20 @@ test("PrototypeApi.create loads content and exposes packet batch", async () => {
     const packets = api.getCurrentPacketBatch();
     assert.equal(packets.length >= 1, true);
 });
+test("PrototypeApi retrospective report exposes stable DTO with deterministic replay flag", async () => {
+    const bundle = await loadContentBundle(resolve(process.cwd(), "content/vertical-slice.json"));
+    const service = new GameService({ schoolYear: "Y10", contentBundle: bundle, rng: makeDeterministicRng(9) });
+    const api = new PrototypeApi(service);
+    api.submitChallengeOutcome({ topic: "ratio_proportion", correct: true, mode: "decision" });
+    api.advanceTime(4);
+    api.submitChallengeOutcome({ topic: "indices", correct: false, mode: "gate" });
+    const report = api.getRetrospectiveReport({ runId: "test-run", playerAlias: "qa" });
+    assert.equal(report.schemaVersion, "retrospective-v1");
+    assert.equal(report.leaderboardEntry.modelVersion, "legacy-v1");
+    assert.equal(report.leaderboardEntry.runId, "test-run");
+    assert.equal(report.leaderboardEntry.playerAlias, "qa");
+    assert.equal(typeof report.legacy.score, "number");
+    assert.equal(typeof report.summary.challengeStats.accuracy, "number");
+    assert.equal(typeof report.eventCounts.ChallengeAttempted, "number");
+    assert.equal(report.replay.deterministic, true);
+});
