@@ -60,10 +60,12 @@ const elements = {
   recordAnchor: document.querySelector("#record-anchor"),
   recordStat: document.querySelector("#record-stat"),
   recordSurface: document.querySelector("#record-surface"),
+  resolvePriority: document.querySelector("#resolve-priority"),
   reducedMotionToggle: document.querySelector("#reduced-motion-toggle"),
   refresh: document.querySelector("#refresh"),
   restart: document.querySelector("#restart"),
   schoolYear: document.querySelector("#school-year"),
+  shellTier: document.querySelector("#shell-tier"),
   status: document.querySelector("#status"),
   summary: document.querySelector("#summary"),
   summaryStamp: document.querySelector("#summary-stamp"),
@@ -73,12 +75,26 @@ const elements = {
   supplementSurface: document.querySelector("#supplement-surface"),
   tempoState: document.querySelector("#tempo-state"),
   trayAnchor: document.querySelector("#tray-anchor"),
-  trayState: document.querySelector("#tray-state")
+  trayState: document.querySelector("#tray-state"),
+  whipAnchor: document.querySelector("#whip-anchor"),
+  whipQueue: document.querySelector("#whip-queue"),
+  whipStamp: document.querySelector("#whip-stamp"),
+  whipSurface: document.querySelector("#whip-surface")
 };
 
-const SURFACE_FOCUS_ORDER = [
+const SURFACE_FOCUS_ORDER_TIER1 = [
   "In-Tray",
   "Active packet",
+  "Smartphone",
+  "The Record",
+  "The Bubble",
+  "The Supplement",
+  "Diary"
+];
+const SURFACE_FOCUS_ORDER_TIER2 = [
+  "In-Tray",
+  "Active packet",
+  "Whip Board",
   "Smartphone",
   "The Record",
   "The Bubble",
@@ -121,6 +137,8 @@ let lastCollisionCueKey = "";
 let cleanReadEnabled = false;
 let reducedMotionEnabled = false;
 let detailsVisible = false;
+let shellTier = "tier1";
+let whipQueueItems = [];
 
 function setStatus(message) {
   elements.status.textContent = message;
@@ -135,6 +153,10 @@ function applyDetailsVisibility() {
 
 function updateNextStep(trayState) {
   if (!elements.nextStep) {
+    return;
+  }
+  if (shellTier === "tier2" && whipQueueItems.length > 0) {
+    elements.nextStep.textContent = `Top priority: ${whipQueueItems[0].instruction} Use Resolve top priority if unsure.`;
     return;
   }
   if (currentPackets.length === 0) {
@@ -154,6 +176,21 @@ function updateNextStep(trayState) {
     return;
   }
   elements.nextStep.textContent = "Read the question, type a number, then press Check answer.";
+}
+
+function setShellTier(nextTier) {
+  shellTier = nextTier === "tier2" ? "tier2" : "tier1";
+  document.body.classList.toggle("tier2-active", shellTier === "tier2");
+  if (elements.shellTier && elements.shellTier.value !== shellTier) {
+    elements.shellTier.value = shellTier;
+  }
+  if (shellTier === "tier2" && !detailsVisible) {
+    detailsVisible = true;
+    applyDetailsVisibility();
+  }
+  if (elements.whipStamp) {
+    elements.whipStamp.textContent = shellTier === "tier2" ? "priority live" : "tier 2";
+  }
 }
 
 function formatTempo(tempo) {
@@ -546,6 +583,58 @@ function buildCollisionQueue(summary, trayState) {
   return items.slice(0, 5);
 }
 
+function buildWhipQueue(summary, trayState) {
+  const directives = [];
+  const topCollision = collisionQueueItems[0];
+
+  if (topCollision?.type === "crisis_interrupt" || topCollision?.type === "timed_challenge" || trayState === "urgent") {
+    directives.push({
+      level: "critical",
+      target: "packet",
+      title: "Clear urgent packet first",
+      instruction: "Answer the active packet before touching lower-priority surfaces."
+    });
+  }
+
+  if (smartphoneBatches[0]?.urgent === true) {
+    directives.push({
+      level: "high",
+      target: "phone",
+      title: "Triage smartphone fallout",
+      instruction: "Review the latest fallout batch and confirm no critical signal is missed."
+    });
+  }
+
+  if (summary.partyLoyaltyScore < 45 || summary.publicApproval < 42) {
+    directives.push({
+      level: "high",
+      target: "record",
+      title: "Stability check",
+      instruction: "Check record metrics before advancing time."
+    });
+  }
+
+  if (summary.darkIndex >= 60) {
+    directives.push({
+      level: "high",
+      target: "bubble",
+      title: "Narrative risk review",
+      instruction: "Review Bubble Wire for hostile momentum before opening another packet."
+    });
+  }
+
+  if (directives.length === 0) {
+    directives.push({
+      level: "normal",
+      target: "tray",
+      title: "Maintain packet flow",
+      instruction: "Open next task and continue steady progression."
+    });
+  }
+
+  return directives.slice(0, 3);
+}
+
 function renderCollisionQueue() {
   if (collisionQueueItems.length === 0) {
     elements.collisionQueue.replaceChildren(
@@ -571,6 +660,40 @@ function renderCollisionQueue() {
     })
   );
   elements.collisionStamp.textContent = `top: ${collisionQueueItems[0].title}`;
+}
+
+function renderWhipQueue() {
+  if (shellTier !== "tier2") {
+    elements.whipQueue.replaceChildren(
+      Object.assign(document.createElement("p"), { textContent: "Switch to Tier 2 to activate whip directives." })
+    );
+    return;
+  }
+
+  if (whipQueueItems.length === 0) {
+    elements.whipQueue.replaceChildren(
+      Object.assign(document.createElement("p"), { textContent: "No whip directives queued." })
+    );
+    elements.whipStamp.textContent = "stable";
+    return;
+  }
+
+  elements.whipQueue.replaceChildren(
+    ...whipQueueItems.map((entry, index) => {
+      const card = document.createElement("article");
+      card.className = `whip-item level-${entry.level}`;
+
+      const title = document.createElement("h3");
+      title.textContent = `${index + 1}. ${entry.title}`;
+
+      const detail = document.createElement("p");
+      detail.textContent = entry.instruction;
+
+      card.append(title, detail);
+      return card;
+    })
+  );
+  elements.whipStamp.textContent = `top: ${whipQueueItems[0].title}`;
 }
 
 function renderFalloutSurfaces() {
@@ -1084,6 +1207,37 @@ function findPrimaryTaskTarget() {
   return elements.openNext;
 }
 
+function resolveTopPriority() {
+  if (shellTier !== "tier2") {
+    setStatus("Resolve top priority is available in Tier 2.");
+    return;
+  }
+
+  const top = whipQueueItems[0];
+  if (!top) {
+    setStatus("No whip priority is active right now.");
+    return;
+  }
+
+  if (top.target === "packet") {
+    const primary = findPrimaryTaskTarget();
+    primary.focus({ preventScroll: true });
+    if (primary instanceof HTMLElement && primary.scrollIntoView) {
+      primary.scrollIntoView({ behavior: reducedMotionEnabled ? "auto" : "smooth", block: "center" });
+    }
+  } else if (top.target === "phone") {
+    focusSurface(elements.phoneSurface);
+  } else if (top.target === "record") {
+    focusSurface(elements.recordSurface);
+  } else if (top.target === "bubble") {
+    focusSurface(elements.bubbleSurface);
+  } else {
+    elements.trayAnchor.focus({ preventScroll: true });
+  }
+
+  setStatus(`Priority routed: ${top.title}.`);
+}
+
 function maybeRenderInterrupt(summary, trayState) {
   const top = collisionQueueItems[0];
   const urgentFallout = smartphoneBatches[0]?.urgent === true;
@@ -1149,6 +1303,7 @@ function refreshPackets() {
   const pressureProfile = getTempoProfile(summary.currentTempo);
   setTempoVisualState(summary.currentTempo);
   collisionQueueItems = buildCollisionQueue(summary, trayState);
+  whipQueueItems = buildWhipQueue(summary, trayState);
 
   renderSummary(summary);
   renderProgression(progression);
@@ -1165,6 +1320,7 @@ function refreshPackets() {
   renderActionResult();
   renderFalloutSurfaces();
   renderCollisionQueue();
+  renderWhipQueue();
   maybeRenderInterrupt(summary, trayState);
   updateNextStep(trayState);
 
@@ -1176,7 +1332,8 @@ function refreshPackets() {
     lastCollisionCueKey = cueKey;
   }
 
-  elements.focusOrderStamp.textContent = SURFACE_FOCUS_ORDER.join(" -> ");
+  const focusOrder = shellTier === "tier2" ? SURFACE_FOCUS_ORDER_TIER2 : SURFACE_FOCUS_ORDER_TIER1;
+  elements.focusOrderStamp.textContent = focusOrder.join(" -> ");
   setStatus("Ready. Follow the step guide above.");
 }
 
@@ -1206,6 +1363,7 @@ async function boot() {
   bubbleShadowLead = null;
   supplementItems = [];
   collisionQueueItems = [];
+  whipQueueItems = [];
   lastTempoForCue = null;
   lastCollisionCueKey = "";
   currentPackets = [];
@@ -1280,6 +1438,19 @@ function wireEvents() {
     refreshPackets();
   });
 
+  if (elements.shellTier) {
+    elements.shellTier.addEventListener("change", () => {
+      setShellTier(elements.shellTier.value);
+      refreshPackets();
+      setStatus(shellTier === "tier2" ? "Tier 2 shell active." : "Tier 1 shell active.");
+    });
+  }
+  if (elements.resolvePriority) {
+    elements.resolvePriority.addEventListener("click", () => {
+      resolveTopPriority();
+    });
+  }
+
   elements.advance.addEventListener("click", () => {
     handleAdvanceTime();
   });
@@ -1296,6 +1467,12 @@ function wireEvents() {
     focusSurface(elements.phoneSurface);
     setStatus("Smartphone anchor opened immediate fallout surface.");
   });
+  if (elements.whipAnchor) {
+    elements.whipAnchor.addEventListener("click", () => {
+      focusSurface(elements.whipSurface);
+      setStatus("Whip Board opened current priority directives.");
+    });
+  }
   elements.recordAnchor.addEventListener("click", () => {
     focusSurface(elements.recordSurface);
     playPaperRustleCue("The Record");
@@ -1344,6 +1521,10 @@ function wireEvents() {
       focusSurface(elements.recordSurface);
       return;
     }
+    if (key === "w" && shellTier === "tier2") {
+      focusSurface(elements.whipSurface);
+      return;
+    }
     if (key === "b") {
       focusSurface(elements.bubbleSurface);
       return;
@@ -1361,6 +1542,7 @@ function wireEvents() {
 
 loadAccessibilityModes();
 applyDetailsVisibility();
+setShellTier("tier1");
 wireEvents();
 
 boot().catch((error) => {

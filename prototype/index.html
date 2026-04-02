@@ -52,6 +52,10 @@
             <span class="object-title">Smartphone</span>
             <span class="object-meta">fallout</span>
           </button>
+          <button id="whip-anchor" class="desk-object tier2-only" type="button">
+            <span class="object-title">Whip Board</span>
+            <span class="object-meta">priority</span>
+          </button>
           <button id="record-anchor" class="desk-object" type="button">
             <span class="object-title">The Record</span>
             <span class="object-meta">official</span>
@@ -98,6 +102,13 @@
                 </select>
               </label>
               <label>
+                Shell tier
+                <select id="shell-tier">
+                  <option value="tier1">Tier 1 (clear basics)</option>
+                  <option value="tier2">Tier 2 (extra pressure)</option>
+                </select>
+              </label>
+              <label>
                 Advance hours
                 <input id="advance-hours" type="number" min="1" step="1" value="6" />
               </label>
@@ -105,6 +116,7 @@
                 <button id="advance" type="button">Advance time</button>
                 <button id="refresh" type="button">Refresh batch</button>
                 <button id="restart" type="button">Restart shell</button>
+                <button id="resolve-priority" class="tier2-only" type="button">Resolve top priority</button>
               </div>
               <fieldset class="accessibility-controls">
                 <legend>Accessibility modes</legend>
@@ -117,7 +129,7 @@
                   Reduced motion override
                 </label>
               </fieldset>
-              <p class="meta keyboard-hint">Shortcuts: `t` tray, `p` packet, `s` phone, `r` record, `b` bubble, `u` supplement.</p>
+              <p class="meta keyboard-hint">Shortcuts: `t` tray, `p` packet, `w` whip, `s` phone, `r` record, `b` bubble, `u` supplement.</p>
             </div>
           </section>
 
@@ -184,6 +196,16 @@
           </div>
           <div id="action-result" class="action-result">
             <p>No challenge outcome or time advance has been submitted yet.</p>
+          </div>
+        </article>
+
+        <article id="whip-surface" class="panel tier2-only" tabindex="-1">
+          <div class="panel-header">
+            <h2>Whip Board</h2>
+            <span id="whip-stamp" class="meta">tier 2</span>
+          </div>
+          <div id="whip-queue" class="whip-queue">
+            <p>No whip directives queued.</p>
           </div>
         </article>
 
