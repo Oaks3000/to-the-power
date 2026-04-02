@@ -8,15 +8,16 @@ lastUpdated: "2026-04-02"
 
 ## Immediate (This Session / Week)
 
-1. Prepare Phase 4 completion handover packet (status, roadmap, and release-gate evidence links).
-2. Define Phase 5 candidate scope and split blocking vs non-blocking backlog items.
-3. Open and sequence Phase 5 implementation issues.
+1. Start [#28](https://github.com/Oaks3000/to-the-power/issues/28) Tier 2/Tier 3 shell scaling with a concrete implementation slice plan.
+2. Start [#29](https://github.com/Oaks3000/to-the-power/issues/29) ending-state expansion design and deterministic test matrix.
+3. Start [#30](https://github.com/Oaks3000/to-the-power/issues/30) multi-run retrospective/leaderboard DTO and comparison UX framing.
+4. Reconcile baseline gate script drift on `main` (`accessibility:gate`, `prototype:regression` missing in clean main checkout).
 
 ## Short Term (Next 2–4 Weeks)
 
-1. Run a full Phase 4 validation sweep (`npm test`, `npm run accessibility:gate`, `npm run prototype:regression`) and archive outputs.
-2. Open Phase 5 issues for Tier 2/Tier 3 shell scaling and deeper ending coverage.
-3. Prioritize backlog items that affect near-term user testing clarity and retention.
+1. Deliver first playable Tier 2 shell path with preserved novice clarity affordances.
+2. Ship deterministic ending-state evaluator coverage for voted out/sacked/resigned/election defeat.
+3. Add multi-run retrospective comparison panels and replay-backed score trend outputs.
 4. Decide migration timing from `vertical-slice.json` default to `content/index.json`.
 
 ## Questions / Unknowns
@@ -24,3 +25,4 @@ lastUpdated: "2026-04-02"
 - Which concrete release gate thresholds should be used for Tier 1 shell sign-off after broader playtests?
 - Whether additional domain/API surface is required before scaling from Backbencher to PPS/Junior Minister shells.
 - When to switch runtime defaults from `vertical-slice.json` to `content/index.json` after parity confidence.
+- Which branch introduced `accessibility:gate` and `prototype:regression` without those scripts being present on clean `main`.
