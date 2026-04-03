@@ -24,6 +24,10 @@ const elements = {
   bubbleAnchor: document.querySelector("#bubble-anchor"),
   bubbleLead: document.querySelector("#bubble-lead"),
   bubbleSurface: document.querySelector("#bubble-surface"),
+  cabinetAnchor: document.querySelector("#cabinet-anchor"),
+  cabinetGrid: document.querySelector("#cabinet-grid"),
+  cabinetStamp: document.querySelector("#cabinet-stamp"),
+  cabinetSurface: document.querySelector("#cabinet-surface"),
   collisionQueue: document.querySelector("#collision-queue"),
   collisionStamp: document.querySelector("#collision-stamp"),
   collisionSurface: document.querySelector("#collision-surface"),
@@ -61,6 +65,7 @@ const elements = {
   recordStat: document.querySelector("#record-stat"),
   recordSurface: document.querySelector("#record-surface"),
   resolvePriority: document.querySelector("#resolve-priority"),
+  runTriage: document.querySelector("#run-triage"),
   reducedMotionToggle: document.querySelector("#reduced-motion-toggle"),
   refresh: document.querySelector("#refresh"),
   restart: document.querySelector("#restart"),
@@ -95,6 +100,17 @@ const SURFACE_FOCUS_ORDER_TIER2 = [
   "In-Tray",
   "Active packet",
   "Whip Board",
+  "Smartphone",
+  "The Record",
+  "The Bubble",
+  "The Supplement",
+  "Diary"
+];
+const SURFACE_FOCUS_ORDER_TIER3 = [
+  "In-Tray",
+  "Active packet",
+  "Whip Board",
+  "Cabinet Grid",
   "Smartphone",
   "The Record",
   "The Bubble",
@@ -139,6 +155,7 @@ let reducedMotionEnabled = false;
 let detailsVisible = false;
 let shellTier = "tier1";
 let whipQueueItems = [];
+let cabinetGridItems = [];
 
 function setStatus(message) {
   elements.status.textContent = message;
@@ -153,6 +170,10 @@ function applyDetailsVisibility() {
 
 function updateNextStep(trayState) {
   if (!elements.nextStep) {
+    return;
+  }
+  if (shellTier === "tier3" && cabinetGridItems.length > 0) {
+    elements.nextStep.textContent = `Tier 3 triage: ${cabinetGridItems[0].instruction} Then use Run crisis triage.`;
     return;
   }
   if (shellTier === "tier2" && whipQueueItems.length > 0) {
@@ -179,17 +200,21 @@ function updateNextStep(trayState) {
 }
 
 function setShellTier(nextTier) {
-  shellTier = nextTier === "tier2" ? "tier2" : "tier1";
-  document.body.classList.toggle("tier2-active", shellTier === "tier2");
+  shellTier = nextTier === "tier3" ? "tier3" : (nextTier === "tier2" ? "tier2" : "tier1");
+  document.body.classList.toggle("tier2-active", shellTier === "tier2" || shellTier === "tier3");
+  document.body.classList.toggle("tier3-active", shellTier === "tier3");
   if (elements.shellTier && elements.shellTier.value !== shellTier) {
     elements.shellTier.value = shellTier;
   }
-  if (shellTier === "tier2" && !detailsVisible) {
+  if ((shellTier === "tier2" || shellTier === "tier3") && !detailsVisible) {
     detailsVisible = true;
     applyDetailsVisibility();
   }
   if (elements.whipStamp) {
-    elements.whipStamp.textContent = shellTier === "tier2" ? "priority live" : "tier 2";
+    elements.whipStamp.textContent = shellTier === "tier1" ? "tier 2" : "priority live";
+  }
+  if (elements.cabinetStamp) {
+    elements.cabinetStamp.textContent = shellTier === "tier3" ? "stacked pressure" : "tier 3";
   }
 }
 
@@ -635,6 +660,54 @@ function buildWhipQueue(summary, trayState) {
   return directives.slice(0, 3);
 }
 
+function buildCabinetGrid(summary, trayState) {
+  const directives = [];
+  const topCollision = collisionQueueItems[0];
+  const whipTop = whipQueueItems[0];
+
+  if (topCollision && topCollision.priority <= 2) {
+    directives.push({
+      lane: "operations",
+      title: "Immediate desk containment",
+      instruction: "Clear urgent packet pressure before any narrative or optics actions."
+    });
+  }
+
+  if (summary.pressRelationship < 40 || summary.publicApproval < 40) {
+    directives.push({
+      lane: "media",
+      title: "Press confidence repair",
+      instruction: "Stabilize perception signals before advancing the clock."
+    });
+  }
+
+  if (summary.partyLoyaltyScore < 48 || summary.constituencyApproval < 44) {
+    directives.push({
+      lane: "political",
+      title: "Coalition alignment check",
+      instruction: "Review loyalty and constituency readings before opening the next packet."
+    });
+  }
+
+  if (summary.darkIndex >= 55 || trayState === "urgent") {
+    directives.push({
+      lane: "risk",
+      title: "Risk suppression lane",
+      instruction: "Treat risk signals as blocking until pressure drops."
+    });
+  }
+
+  if (directives.length === 0 && whipTop) {
+    directives.push({
+      lane: "operations",
+      title: "Maintain cabinet rhythm",
+      instruction: whipTop.instruction
+    });
+  }
+
+  return directives.slice(0, 4);
+}
+
 function renderCollisionQueue() {
   if (collisionQueueItems.length === 0) {
     elements.collisionQueue.replaceChildren(
@@ -663,9 +736,9 @@ function renderCollisionQueue() {
 }
 
 function renderWhipQueue() {
-  if (shellTier !== "tier2") {
+  if (shellTier !== "tier2" && shellTier !== "tier3") {
     elements.whipQueue.replaceChildren(
-      Object.assign(document.createElement("p"), { textContent: "Switch to Tier 2 to activate whip directives." })
+      Object.assign(document.createElement("p"), { textContent: "Switch to Tier 2 or Tier 3 to activate whip directives." })
     );
     return;
   }
@@ -694,6 +767,40 @@ function renderWhipQueue() {
     })
   );
   elements.whipStamp.textContent = `top: ${whipQueueItems[0].title}`;
+}
+
+function renderCabinetGrid() {
+  if (shellTier !== "tier3") {
+    elements.cabinetGrid.replaceChildren(
+      Object.assign(document.createElement("p"), { textContent: "Switch to Tier 3 to activate cabinet-level triage." })
+    );
+    return;
+  }
+
+  if (cabinetGridItems.length === 0) {
+    elements.cabinetGrid.replaceChildren(
+      Object.assign(document.createElement("p"), { textContent: "No cabinet pressure is active." })
+    );
+    elements.cabinetStamp.textContent = "stable";
+    return;
+  }
+
+  elements.cabinetGrid.replaceChildren(
+    ...cabinetGridItems.map((entry, index) => {
+      const card = document.createElement("article");
+      card.className = `cabinet-item lane-${entry.lane}`;
+
+      const title = document.createElement("h3");
+      title.textContent = `${index + 1}. ${entry.title}`;
+
+      const detail = document.createElement("p");
+      detail.textContent = entry.instruction;
+
+      card.append(title, detail);
+      return card;
+    })
+  );
+  elements.cabinetStamp.textContent = `top: ${cabinetGridItems[0].title}`;
 }
 
 function renderFalloutSurfaces() {
@@ -1207,9 +1314,37 @@ function findPrimaryTaskTarget() {
   return elements.openNext;
 }
 
+function routePriorityTarget(target) {
+  if (target === "packet") {
+    const primary = findPrimaryTaskTarget();
+    primary.focus({ preventScroll: true });
+    if (primary instanceof HTMLElement && primary.scrollIntoView) {
+      primary.scrollIntoView({ behavior: reducedMotionEnabled ? "auto" : "smooth", block: "center" });
+    }
+    return;
+  }
+  if (target === "phone") {
+    focusSurface(elements.phoneSurface);
+    return;
+  }
+  if (target === "record") {
+    focusSurface(elements.recordSurface);
+    return;
+  }
+  if (target === "bubble") {
+    focusSurface(elements.bubbleSurface);
+    return;
+  }
+  if (target === "cabinet") {
+    focusSurface(elements.cabinetSurface);
+    return;
+  }
+  elements.trayAnchor.focus({ preventScroll: true });
+}
+
 function resolveTopPriority() {
-  if (shellTier !== "tier2") {
-    setStatus("Resolve top priority is available in Tier 2.");
+  if (shellTier !== "tier2" && shellTier !== "tier3") {
+    setStatus("Resolve top priority is available in Tier 2 or Tier 3.");
     return;
   }
 
@@ -1219,23 +1354,32 @@ function resolveTopPriority() {
     return;
   }
 
-  if (top.target === "packet") {
-    const primary = findPrimaryTaskTarget();
-    primary.focus({ preventScroll: true });
-    if (primary instanceof HTMLElement && primary.scrollIntoView) {
-      primary.scrollIntoView({ behavior: reducedMotionEnabled ? "auto" : "smooth", block: "center" });
-    }
-  } else if (top.target === "phone") {
-    focusSurface(elements.phoneSurface);
-  } else if (top.target === "record") {
-    focusSurface(elements.recordSurface);
-  } else if (top.target === "bubble") {
-    focusSurface(elements.bubbleSurface);
-  } else {
-    elements.trayAnchor.focus({ preventScroll: true });
+  routePriorityTarget(top.target);
+  setStatus(`Priority routed: ${top.title}.`);
+}
+
+function runCrisisTriage() {
+  if (shellTier !== "tier3") {
+    setStatus("Run crisis triage is available in Tier 3.");
+    return;
+  }
+  if (cabinetGridItems.length === 0) {
+    setStatus("No cabinet directives are active right now.");
+    return;
   }
 
-  setStatus(`Priority routed: ${top.title}.`);
+  const topWhipTarget = whipQueueItems[0]?.target ?? "packet";
+  routePriorityTarget(topWhipTarget);
+  const topCabinet = cabinetGridItems[0];
+  if (topCabinet?.lane === "media") {
+    focusSurface(elements.phoneSurface);
+  } else if (topCabinet?.lane === "political") {
+    focusSurface(elements.recordSurface);
+  } else if (topCabinet?.lane === "risk") {
+    focusSurface(elements.bubbleSurface);
+  }
+
+  setStatus(`Tier 3 triage routed: ${topCabinet.title}.`);
 }
 
 function maybeRenderInterrupt(summary, trayState) {
@@ -1304,6 +1448,7 @@ function refreshPackets() {
   setTempoVisualState(summary.currentTempo);
   collisionQueueItems = buildCollisionQueue(summary, trayState);
   whipQueueItems = buildWhipQueue(summary, trayState);
+  cabinetGridItems = buildCabinetGrid(summary, trayState);
 
   renderSummary(summary);
   renderProgression(progression);
@@ -1321,6 +1466,7 @@ function refreshPackets() {
   renderFalloutSurfaces();
   renderCollisionQueue();
   renderWhipQueue();
+  renderCabinetGrid();
   maybeRenderInterrupt(summary, trayState);
   updateNextStep(trayState);
 
@@ -1332,7 +1478,9 @@ function refreshPackets() {
     lastCollisionCueKey = cueKey;
   }
 
-  const focusOrder = shellTier === "tier2" ? SURFACE_FOCUS_ORDER_TIER2 : SURFACE_FOCUS_ORDER_TIER1;
+  const focusOrder = shellTier === "tier3"
+    ? SURFACE_FOCUS_ORDER_TIER3
+    : (shellTier === "tier2" ? SURFACE_FOCUS_ORDER_TIER2 : SURFACE_FOCUS_ORDER_TIER1);
   elements.focusOrderStamp.textContent = focusOrder.join(" -> ");
   setStatus("Ready. Follow the step guide above.");
 }
@@ -1364,6 +1512,7 @@ async function boot() {
   supplementItems = [];
   collisionQueueItems = [];
   whipQueueItems = [];
+  cabinetGridItems = [];
   lastTempoForCue = null;
   lastCollisionCueKey = "";
   currentPackets = [];
@@ -1442,12 +1591,17 @@ function wireEvents() {
     elements.shellTier.addEventListener("change", () => {
       setShellTier(elements.shellTier.value);
       refreshPackets();
-      setStatus(shellTier === "tier2" ? "Tier 2 shell active." : "Tier 1 shell active.");
+      setStatus(shellTier === "tier3" ? "Tier 3 shell active." : (shellTier === "tier2" ? "Tier 2 shell active." : "Tier 1 shell active."));
     });
   }
   if (elements.resolvePriority) {
     elements.resolvePriority.addEventListener("click", () => {
       resolveTopPriority();
+    });
+  }
+  if (elements.runTriage) {
+    elements.runTriage.addEventListener("click", () => {
+      runCrisisTriage();
     });
   }
 
@@ -1471,6 +1625,12 @@ function wireEvents() {
     elements.whipAnchor.addEventListener("click", () => {
       focusSurface(elements.whipSurface);
       setStatus("Whip Board opened current priority directives.");
+    });
+  }
+  if (elements.cabinetAnchor) {
+    elements.cabinetAnchor.addEventListener("click", () => {
+      focusSurface(elements.cabinetSurface);
+      setStatus("Cabinet Grid opened stacked pressure directives.");
     });
   }
   elements.recordAnchor.addEventListener("click", () => {
@@ -1521,8 +1681,12 @@ function wireEvents() {
       focusSurface(elements.recordSurface);
       return;
     }
-    if (key === "w" && shellTier === "tier2") {
+    if (key === "w" && (shellTier === "tier2" || shellTier === "tier3")) {
       focusSurface(elements.whipSurface);
+      return;
+    }
+    if (key === "g" && shellTier === "tier3") {
+      focusSurface(elements.cabinetSurface);
       return;
     }
     if (key === "b") {

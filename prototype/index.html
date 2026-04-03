@@ -56,6 +56,10 @@
             <span class="object-title">Whip Board</span>
             <span class="object-meta">priority</span>
           </button>
+          <button id="cabinet-anchor" class="desk-object tier3-only" type="button">
+            <span class="object-title">Cabinet Grid</span>
+            <span class="object-meta">alignment</span>
+          </button>
           <button id="record-anchor" class="desk-object" type="button">
             <span class="object-title">The Record</span>
             <span class="object-meta">official</span>
@@ -106,6 +110,7 @@
                 <select id="shell-tier">
                   <option value="tier1">Tier 1 (clear basics)</option>
                   <option value="tier2">Tier 2 (extra pressure)</option>
+                  <option value="tier3">Tier 3 (stacked pressure)</option>
                 </select>
               </label>
               <label>
@@ -117,6 +122,7 @@
                 <button id="refresh" type="button">Refresh batch</button>
                 <button id="restart" type="button">Restart shell</button>
                 <button id="resolve-priority" class="tier2-only" type="button">Resolve top priority</button>
+                <button id="run-triage" class="tier3-only" type="button">Run crisis triage</button>
               </div>
               <fieldset class="accessibility-controls">
                 <legend>Accessibility modes</legend>
@@ -129,7 +135,7 @@
                   Reduced motion override
                 </label>
               </fieldset>
-              <p class="meta keyboard-hint">Shortcuts: `t` tray, `p` packet, `w` whip, `s` phone, `r` record, `b` bubble, `u` supplement.</p>
+              <p class="meta keyboard-hint">Shortcuts: `t` tray, `p` packet, `w` whip, `g` cabinet grid, `s` phone, `r` record, `b` bubble, `u` supplement.</p>
             </div>
           </section>
 
@@ -206,6 +212,16 @@
           </div>
           <div id="whip-queue" class="whip-queue">
             <p>No whip directives queued.</p>
+          </div>
+        </article>
+
+        <article id="cabinet-surface" class="panel tier3-only" tabindex="-1">
+          <div class="panel-header">
+            <h2>Cabinet Grid</h2>
+            <span id="cabinet-stamp" class="meta">tier 3</span>
+          </div>
+          <div id="cabinet-grid" class="cabinet-grid">
+            <p>No cabinet pressure is active.</p>
           </div>
         </article>
 
