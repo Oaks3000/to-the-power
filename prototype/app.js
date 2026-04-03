@@ -964,13 +964,16 @@ function renderRetrospective(report) {
   const detail = document.createElement("p");
   detail.textContent = `Peak role: ${summary.peakRole.replaceAll("_", " ")}. ${summary.challengeStats.accuracy}% challenge accuracy over ${summary.challengeStats.attempts} attempt${summary.challengeStats.attempts === 1 ? "" : "s"}.`;
 
+  const ending = document.createElement("p");
+  ending.textContent = `Ending: ${summary.ending.title}. ${summary.ending.detail}`;
+
   const replay = document.createElement("p");
   replay.className = "meta";
   replay.textContent = report.replay.deterministic
     ? "Replay consistency check: deterministic"
     : "Replay consistency check: mismatch detected";
 
-  summaryCard.append(title, detail, replay);
+  summaryCard.append(title, detail, ending, replay);
   elements.retrospectiveSummary.replaceChildren(summaryCard);
 
   const leaderboardCard = document.createElement("article");
