@@ -15,6 +15,10 @@ const EVENT_TYPES = [
     "NPCRelationshipChanged",
     "DarkIndexChanged"
 ];
+function toTimestamp(value) {
+    const parsed = Date.parse(value);
+    return Number.isFinite(parsed) ? parsed : 0;
+}
 function clampPercent(value) {
     return Math.max(0, Math.min(100, value));
 }
@@ -264,5 +268,35 @@ export function buildRetrospectiveReport(state, options = {}) {
             timestampIso: now.toISOString()
         },
         replay
+    };
+}
+export function buildRetrospectiveComparison(records) {
+    if (records.length < 2) {
+        throw new Error("At least two retrospective run records are required for comparison.");
+    }
+    const ordered = [...records].sort((left, right) => toTimestamp(left.savedAtIso) - toTimestamp(right.savedAtIso));
+    const baseline = ordered[ordered.length - 2];
+    const candidate = ordered[ordered.length - 1];
+    if (!baseline || !candidate) {
+        throw new Error("Unable to derive baseline/candidate runs for comparison.");
+    }
+    const nonDeterministicRunIds = ordered
+        .filter((entry) => !entry.report.replay.deterministic)
+        .map((entry) => entry.report.leaderboardEntry.runId);
+    return {
+        schemaVersion: "retrospective-compare-v1",
+        baselineRunId: baseline.report.leaderboardEntry.runId,
+        candidateRunId: candidate.report.leaderboardEntry.runId,
+        runCount: ordered.length,
+        trends: {
+            legacyScoreDelta: candidate.report.legacy.score - baseline.report.legacy.score,
+            challengeAccuracyDelta: candidate.report.summary.challengeStats.accuracy - baseline.report.summary.challengeStats.accuracy,
+            darkIndexDelta: candidate.report.summary.finalScores.darkIndex - baseline.report.summary.finalScores.darkIndex,
+            totalHoursDelta: candidate.report.summary.totalHours - baseline.report.summary.totalHours
+        },
+        replay: {
+            allDeterministic: nonDeterministicRunIds.length === 0,
+            nonDeterministicRunIds
+        }
     };
 }

@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { buildRetrospectiveReport, evaluateEndingState } from "../application/retrospective.js";
+import { buildRetrospectiveComparison, buildRetrospectiveReport, evaluateEndingState } from "../application/retrospective.js";
 import { executeCommand } from "../domain/commands.js";
 import { createInitialGameState } from "../domain/state.js";
 test("retrospective report is deterministic for fixed event log and timestamp", () => {
@@ -73,4 +73,42 @@ test("retrospective report includes ending taxonomy output", () => {
     assert.equal(report.summary.ending.outcome, "voted_out");
     assert.equal(typeof report.summary.ending.title, "string");
     assert.equal(typeof report.summary.ending.detail, "string");
+});
+test("multi-run comparison computes trend deltas from latest two saved runs", () => {
+    let stateA = createInitialGameState("Y10");
+    stateA = executeCommand(stateA, { type: "submit_challenge_answer", topic: "ratio_proportion", correct: true, mode: "decision" });
+    stateA = executeCommand(stateA, { type: "advance_time", hours: 4 });
+    const reportA = buildRetrospectiveReport(stateA, { runId: "run-a", now: new Date("2026-04-03T09:00:00.000Z") });
+    let stateB = createInitialGameState("Y10");
+    stateB = executeCommand(stateB, { type: "submit_challenge_answer", topic: "ratio_proportion", correct: false, mode: "crisis" });
+    stateB = executeCommand(stateB, { type: "change_dark_index", delta: 8 });
+    stateB = executeCommand(stateB, { type: "advance_time", hours: 8 });
+    const reportB = buildRetrospectiveReport(stateB, { runId: "run-b", now: new Date("2026-04-03T10:00:00.000Z") });
+    const comparison = buildRetrospectiveComparison([
+        { savedAtIso: "2026-04-03T09:00:00.000Z", report: reportA },
+        { savedAtIso: "2026-04-03T10:00:00.000Z", report: reportB }
+    ]);
+    assert.equal(comparison.schemaVersion, "retrospective-compare-v1");
+    assert.equal(comparison.baselineRunId, "run-a");
+    assert.equal(comparison.candidateRunId, "run-b");
+    assert.equal(typeof comparison.trends.legacyScoreDelta, "number");
+    assert.equal(comparison.replay.allDeterministic, true);
+});
+test("multi-run comparison reports non-deterministic replay runs", () => {
+    const stateA = createInitialGameState("Y9");
+    const reportA = buildRetrospectiveReport(stateA, { runId: "det-run", now: new Date("2026-04-03T09:00:00.000Z") });
+    const reportB = buildRetrospectiveReport(stateA, { runId: "nondet-run", now: new Date("2026-04-03T10:00:00.000Z") });
+    const modified = {
+        ...reportB,
+        replay: {
+            ...reportB.replay,
+            deterministic: false
+        }
+    };
+    const comparison = buildRetrospectiveComparison([
+        { savedAtIso: "2026-04-03T09:00:00.000Z", report: reportA },
+        { savedAtIso: "2026-04-03T10:00:00.000Z", report: modified }
+    ]);
+    assert.equal(comparison.replay.allDeterministic, false);
+    assert.deepEqual(comparison.replay.nonDeterministicRunIds, ["nondet-run"]);
 });

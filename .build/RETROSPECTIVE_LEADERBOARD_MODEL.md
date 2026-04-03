@@ -56,4 +56,8 @@
 ## UI Binding
 - Prototype panel: `Retrospective`
   - shows run snapshot, legacy score/band, DTO stamp, replay status
+  - includes saved-run comparison controls and side-by-side latest-two run cards
   - files: `prototype/index.html`, `prototype/app.js`, `prototype/styles.css`
+
+## Multi-Run Extension
+- Comparison model and storage strategy are documented in `.build/RETROSPECTIVE_MULTI_RUN_MODEL.md`.
