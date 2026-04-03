@@ -87,12 +87,39 @@ export interface RetrospectiveReport {
   replay: ReplayConsistency;
 }
 
+export interface RetrospectiveRunRecord {
+  savedAtIso: string;
+  report: RetrospectiveReport;
+}
+
+export interface RetrospectiveComparison {
+  schemaVersion: "retrospective-compare-v1";
+  baselineRunId: string;
+  candidateRunId: string;
+  runCount: number;
+  trends: {
+    legacyScoreDelta: number;
+    challengeAccuracyDelta: number;
+    darkIndexDelta: number;
+    totalHoursDelta: number;
+  };
+  replay: {
+    allDeterministic: boolean;
+    nonDeterministicRunIds: string[];
+  };
+}
+
 export interface BuildRetrospectiveOptions {
   runId?: string;
   playerAlias?: string;
   seedState?: GameState;
   rng?: Rng;
   now?: Date;
+}
+
+function toTimestamp(value: string): number {
+  const parsed = Date.parse(value);
+  return Number.isFinite(parsed) ? parsed : 0;
 }
 
 function clampPercent(value: number): number {
@@ -377,5 +404,39 @@ export function buildRetrospectiveReport(state: GameState, options: BuildRetrosp
       timestampIso: now.toISOString()
     },
     replay
+  };
+}
+
+export function buildRetrospectiveComparison(records: RetrospectiveRunRecord[]): RetrospectiveComparison {
+  if (records.length < 2) {
+    throw new Error("At least two retrospective run records are required for comparison.");
+  }
+
+  const ordered = [...records].sort((left, right) => toTimestamp(left.savedAtIso) - toTimestamp(right.savedAtIso));
+  const baseline = ordered[ordered.length - 2];
+  const candidate = ordered[ordered.length - 1];
+  if (!baseline || !candidate) {
+    throw new Error("Unable to derive baseline/candidate runs for comparison.");
+  }
+
+  const nonDeterministicRunIds = ordered
+    .filter((entry) => !entry.report.replay.deterministic)
+    .map((entry) => entry.report.leaderboardEntry.runId);
+
+  return {
+    schemaVersion: "retrospective-compare-v1",
+    baselineRunId: baseline.report.leaderboardEntry.runId,
+    candidateRunId: candidate.report.leaderboardEntry.runId,
+    runCount: ordered.length,
+    trends: {
+      legacyScoreDelta: candidate.report.legacy.score - baseline.report.legacy.score,
+      challengeAccuracyDelta: candidate.report.summary.challengeStats.accuracy - baseline.report.summary.challengeStats.accuracy,
+      darkIndexDelta: candidate.report.summary.finalScores.darkIndex - baseline.report.summary.finalScores.darkIndex,
+      totalHoursDelta: candidate.report.summary.totalHours - baseline.report.summary.totalHours
+    },
+    replay: {
+      allDeterministic: nonDeterministicRunIds.length === 0,
+      nonDeterministicRunIds
+    }
   };
 }

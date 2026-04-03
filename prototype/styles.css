@@ -337,6 +337,20 @@ h1 {
   padding: 0.56rem 0.82rem;
 }
 
+.retrospective-actions {
+  display: flex;
+  gap: 0.45rem;
+  flex-wrap: wrap;
+  margin: 0.5rem 0 0.55rem;
+}
+
+.retrospective-actions button {
+  border: 1px solid var(--line);
+  background: linear-gradient(180deg, #fff 0%, #f1e8d7 100%);
+  border-radius: 999px;
+  padding: 0.45rem 0.72rem;
+}
+
 .tier2-only {
   display: none;
 }
@@ -696,6 +710,17 @@ body:not(.details-expanded) #supplement-surface {
   gap: 0.55rem;
 }
 
+.comparison-summary,
+.comparison-grid {
+  display: grid;
+  gap: 0.55rem;
+  margin-top: 0.55rem;
+}
+
+.comparison-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
 .record-stat {
   border: 1px solid var(--line);
   border-radius: 10px;
@@ -799,6 +824,24 @@ body:not(.details-expanded) #supplement-surface {
   padding: 0.6rem 0.7rem;
 }
 
+.comparison-card {
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: #fff;
+  padding: 0.6rem 0.7rem;
+}
+
+.comparison-card p,
+.comparison-card li {
+  color: var(--muted);
+  margin-top: 0.25rem;
+}
+
+.comparison-card ul {
+  margin: 0.35rem 0 0;
+  padding-left: 1rem;
+}
+
 .whip-item {
   border: 1px solid var(--line);
   border-radius: 12px;
@@ -895,6 +938,10 @@ body:not(.details-expanded) #supplement-surface {
   }
 
   .detail-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .comparison-grid {
     grid-template-columns: 1fr;
   }
 

@@ -1,4 +1,5 @@
 import { PrototypeApi } from "/prototype/runtime-api.js";
+import { buildRetrospectiveComparison } from "/dist/application/retrospective.js";
 import { validateContentBundle } from "/dist/content/schema.js";
 
 const summaryEntries = [
@@ -37,6 +38,11 @@ const elements = {
   audioToggle: document.querySelector("#audio-toggle"),
   cleanReadToggle: document.querySelector("#clean-read-toggle"),
   clockReadout: document.querySelector("#clock-readout"),
+  clearRuns: document.querySelector("#clear-runs"),
+  compareRuns: document.querySelector("#compare-runs"),
+  comparisonGrid: document.querySelector("#comparison-grid"),
+  comparisonStatus: document.querySelector("#comparison-status"),
+  comparisonSummary: document.querySelector("#comparison-summary"),
   diarySurface: document.querySelector("#diary-surface"),
   eventCount: document.querySelector("#event-count"),
   eventLog: document.querySelector("#event-log"),
@@ -70,6 +76,7 @@ const elements = {
   refresh: document.querySelector("#refresh"),
   restart: document.querySelector("#restart"),
   schoolYear: document.querySelector("#school-year"),
+  saveRun: document.querySelector("#save-run"),
   shellTier: document.querySelector("#shell-tier"),
   status: document.querySelector("#status"),
   summary: document.querySelector("#summary"),
@@ -156,6 +163,10 @@ let detailsVisible = false;
 let shellTier = "tier1";
 let whipQueueItems = [];
 let cabinetGridItems = [];
+let savedRetrospectiveRuns = [];
+
+const RETROSPECTIVE_RUN_STORAGE_KEY = "ttp.retrospectiveRuns.v1";
+const MAX_SAVED_RETROSPECTIVE_RUNS = 12;
 
 function setStatus(message) {
   elements.status.textContent = message;
@@ -165,6 +176,50 @@ function applyDetailsVisibility() {
   document.body.classList.toggle("details-expanded", detailsVisible);
   if (elements.detailsToggle) {
     elements.detailsToggle.textContent = detailsVisible ? "Hide extra panels" : "Show extra panels";
+  }
+}
+
+function formatDelta(value) {
+  if (value === 0) {
+    return "0";
+  }
+  return value > 0 ? `+${value}` : String(value);
+}
+
+function loadSavedRetrospectiveRuns() {
+  try {
+    const raw = localStorage.getItem(RETROSPECTIVE_RUN_STORAGE_KEY);
+    if (!raw) {
+      savedRetrospectiveRuns = [];
+      return;
+    }
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed)) {
+      savedRetrospectiveRuns = [];
+      return;
+    }
+    savedRetrospectiveRuns = parsed.filter((entry) => {
+      if (!entry || typeof entry !== "object") {
+        return false;
+      }
+      if (typeof entry.savedAtIso !== "string") {
+        return false;
+      }
+      if (!entry.report || typeof entry.report !== "object") {
+        return false;
+      }
+      return typeof entry.report.schemaVersion === "string";
+    }).slice(-MAX_SAVED_RETROSPECTIVE_RUNS);
+  } catch {
+    savedRetrospectiveRuns = [];
+  }
+}
+
+function persistSavedRetrospectiveRuns() {
+  try {
+    localStorage.setItem(RETROSPECTIVE_RUN_STORAGE_KEY, JSON.stringify(savedRetrospectiveRuns));
+  } catch {
+    // Ignore persistence errors; in-memory run list still works.
   }
 }
 
@@ -994,6 +1049,114 @@ function renderRetrospective(report) {
   elements.retrospectiveStamp.textContent = report.replay.deterministic ? "deterministic replay" : "replay mismatch";
 }
 
+function renderRunComparison() {
+  if (elements.comparisonStatus) {
+    elements.comparisonStatus.textContent = `Saved runs: ${savedRetrospectiveRuns.length}`;
+  }
+  if (savedRetrospectiveRuns.length < 2) {
+    elements.comparisonSummary.replaceChildren(
+      Object.assign(document.createElement("p"), {
+        textContent: "Save at least two runs to compare trajectory shifts."
+      })
+    );
+    elements.comparisonGrid.replaceChildren(
+      Object.assign(document.createElement("p"), {
+        textContent: "No comparison available yet."
+      })
+    );
+    return;
+  }
+
+  const comparison = buildRetrospectiveComparison(savedRetrospectiveRuns);
+  const baseline = savedRetrospectiveRuns.find((entry) => entry.report.leaderboardEntry.runId === comparison.baselineRunId);
+  const candidate = savedRetrospectiveRuns.find((entry) => entry.report.leaderboardEntry.runId === comparison.candidateRunId);
+  if (!baseline || !candidate) {
+    elements.comparisonSummary.replaceChildren(
+      Object.assign(document.createElement("p"), { textContent: "Comparison records are incomplete." })
+    );
+    elements.comparisonGrid.replaceChildren(
+      Object.assign(document.createElement("p"), { textContent: "Unable to render run comparison." })
+    );
+    return;
+  }
+
+  const trendCard = document.createElement("article");
+  trendCard.className = "comparison-card";
+
+  const trendTitle = document.createElement("h3");
+  trendTitle.textContent = `Trend snapshot (${comparison.runCount} saved runs)`;
+
+  const trendList = document.createElement("ul");
+  const trendItems = [
+    `Legacy score delta: ${formatDelta(comparison.trends.legacyScoreDelta)}`,
+    `Accuracy delta: ${formatDelta(comparison.trends.challengeAccuracyDelta)}%`,
+    `Dark-index delta: ${formatDelta(comparison.trends.darkIndexDelta)}`,
+    `Hours delta: ${formatDelta(comparison.trends.totalHoursDelta)}`
+  ];
+  trendItems.forEach((text) => {
+    const item = document.createElement("li");
+    item.textContent = text;
+    trendList.append(item);
+  });
+
+  const replayMeta = document.createElement("p");
+  replayMeta.className = "meta";
+  replayMeta.textContent = comparison.replay.allDeterministic
+    ? "Comparison replay check: deterministic across compared runs."
+    : `Replay mismatches in run IDs: ${comparison.replay.nonDeterministicRunIds.join(", ")}`;
+
+  trendCard.append(trendTitle, trendList, replayMeta);
+  elements.comparisonSummary.replaceChildren(trendCard);
+
+  const makeRunCard = (label, entry) => {
+    const card = document.createElement("article");
+    card.className = "comparison-card";
+
+    const title = document.createElement("h3");
+    title.textContent = `${label}: ${entry.report.summary.finalRole.replaceAll("_", " ")}`;
+
+    const details = document.createElement("p");
+    details.textContent = `Legacy ${entry.report.legacy.score} | Accuracy ${entry.report.summary.challengeStats.accuracy}% | Dark index ${entry.report.summary.finalScores.darkIndex}`;
+
+    const meta = document.createElement("p");
+    meta.className = "meta";
+    meta.textContent = `${entry.report.leaderboardEntry.runId} | ${entry.savedAtIso}`;
+
+    card.append(title, details, meta);
+    return card;
+  };
+
+  elements.comparisonGrid.replaceChildren(
+    makeRunCard("Baseline", baseline),
+    makeRunCard("Candidate", candidate)
+  );
+}
+
+function saveCurrentRunSnapshot() {
+  if (!api) {
+    return;
+  }
+  const report = api.getRetrospectiveReport({
+    playerAlias: "prototype-shell",
+    runId: `shell-${Date.now()}`
+  });
+  const record = {
+    savedAtIso: new Date().toISOString(),
+    report
+  };
+  savedRetrospectiveRuns = [...savedRetrospectiveRuns, record].slice(-MAX_SAVED_RETROSPECTIVE_RUNS);
+  persistSavedRetrospectiveRuns();
+  renderRunComparison();
+  setStatus(`Saved run snapshot ${record.report.leaderboardEntry.runId}.`);
+}
+
+function clearSavedRunSnapshots() {
+  savedRetrospectiveRuns = [];
+  persistSavedRetrospectiveRuns();
+  renderRunComparison();
+  setStatus("Saved run snapshots cleared.");
+}
+
 function buildSection(title, body, meta) {
   const section = document.createElement("section");
   section.className = "packet-section";
@@ -1456,6 +1619,7 @@ function refreshPackets() {
   renderSummary(summary);
   renderProgression(progression);
   renderRetrospective(retrospective);
+  renderRunComparison();
   renderTrayState(trayState, currentPackets.length);
   renderPacketQueue();
   renderPacketFocus();
@@ -1589,6 +1753,22 @@ function wireEvents() {
   elements.refresh.addEventListener("click", () => {
     refreshPackets();
   });
+  if (elements.saveRun) {
+    elements.saveRun.addEventListener("click", () => {
+      saveCurrentRunSnapshot();
+    });
+  }
+  if (elements.compareRuns) {
+    elements.compareRuns.addEventListener("click", () => {
+      renderRunComparison();
+      setStatus("Compared latest saved runs.");
+    });
+  }
+  if (elements.clearRuns) {
+    elements.clearRuns.addEventListener("click", () => {
+      clearSavedRunSnapshots();
+    });
+  }
 
   if (elements.shellTier) {
     elements.shellTier.addEventListener("change", () => {
@@ -1708,6 +1888,7 @@ function wireEvents() {
 }
 
 loadAccessibilityModes();
+loadSavedRetrospectiveRuns();
 applyDetailsVisibility();
 setShellTier("tier1");
 wireEvents();
