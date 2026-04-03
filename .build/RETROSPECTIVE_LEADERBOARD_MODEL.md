@@ -16,6 +16,7 @@
 - `summary`
   - final/peak role, final tempo, total hours, score snapshot, challenge stats
   - remediation/timed challenge counters
+  - ending taxonomy payload (`continuing|voted_out|sacked|resigned|election_defeat`)
 - `eventCounts`
   - count for each domain event type in the run log
 - `legacy`
@@ -47,6 +48,10 @@
   - school year, role, tempo, time, key scores, queue counts, event log length
 - Replay uses reducer path with latent evaluation disabled so event log remains the single source of truth for replays.
 - Failures surface explicit per-field mismatch strings in DTO.
+
+## Ending Taxonomy
+- Rules and precedence are documented in `.build/ENDING_STATE_RULES.md`.
+- `RetrospectiveSummary.ending` is generated from run state using deterministic precedence.
 
 ## UI Binding
 - Prototype panel: `Retrospective`

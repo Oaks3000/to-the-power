@@ -111,6 +111,76 @@ function computeLegacySummary(state, challengeAccuracy) {
         rationale: "Risk, misses, or weak support outweighed headline progress."
     };
 }
+function hasMinisterialRole(role) {
+    return role === "junior_minister" || role === "minister_of_state" || role === "cabinet" || role === "pm";
+}
+export function evaluateEndingState(state) {
+    const reasons = [];
+    const resigned = state.darkIndex >= 85 &&
+        (state.pressRelationship <= 35 || state.publicApproval <= 35);
+    if (resigned) {
+        reasons.push("dark-index critical");
+        if (state.pressRelationship <= 35) {
+            reasons.push("press relationship collapse");
+        }
+        if (state.publicApproval <= 35) {
+            reasons.push("public approval collapse");
+        }
+        return {
+            outcome: "resigned",
+            title: "Resigned under pressure",
+            detail: "Sustained risk pressure made the position untenable.",
+            reasons
+        };
+    }
+    const sacked = hasMinisterialRole(state.currentRole) &&
+        (state.partyLoyaltyScore <= 25 || state.darkIndex >= 75);
+    if (sacked) {
+        reasons.push("ministerial confidence lost");
+        if (state.partyLoyaltyScore <= 25) {
+            reasons.push("party loyalty below dismissal threshold");
+        }
+        if (state.darkIndex >= 75) {
+            reasons.push("risk escalation triggered leadership intervention");
+        }
+        return {
+            outcome: "sacked",
+            title: "Dismissed from office",
+            detail: "Leadership removed you from post after confidence broke down.",
+            reasons
+        };
+    }
+    const electionDefeat = state.timeHours >= 96 &&
+        (state.publicApproval + state.constituencyApproval) <= 70;
+    if (electionDefeat) {
+        reasons.push("election cycle reached");
+        reasons.push("combined mandate score below threshold");
+        return {
+            outcome: "election_defeat",
+            title: "Election defeat",
+            detail: "The wider mandate failed at election checkpoint.",
+            reasons
+        };
+    }
+    const votedOut = state.constituencyApproval <= 20 &&
+        state.publicApproval <= 30;
+    if (votedOut) {
+        reasons.push("constituency approval collapse");
+        reasons.push("public approval collapse");
+        return {
+            outcome: "voted_out",
+            title: "Voted out",
+            detail: "Local support collapsed below survivable levels.",
+            reasons
+        };
+    }
+    return {
+        outcome: "continuing",
+        title: "Career active",
+        detail: "No terminal ending condition is currently met.",
+        reasons: []
+    };
+}
 function buildReplayConsistency(state, seedState, rng) {
     const replayed = reduceEvents(seedState, state.eventLog, rng, { evaluateLatent: false });
     const checkedFields = [
@@ -157,6 +227,7 @@ export function buildRetrospectiveReport(state, options = {}) {
     const replay = buildReplayConsistency(state, options.seedState ?? createInitialGameState(state.schoolYear), options.rng ?? Math.random);
     const now = options.now ?? new Date();
     const peakRole = findPeakRole(state);
+    const ending = evaluateEndingState(state);
     return {
         schemaVersion: "retrospective-v1",
         summary: {
@@ -175,7 +246,8 @@ export function buildRetrospectiveReport(state, options = {}) {
             challengeStats,
             remediationTriggered: state.eventLog.filter((event) => event.type === "RemediationTriggered").length,
             activeTimedChallenges: Object.keys(state.activeTimedChallenges).length,
-            pendingRemediations: state.pendingRemediations.length
+            pendingRemediations: state.pendingRemediations.length,
+            ending
         },
         eventCounts: countEvents(state.eventLog),
         legacy,
