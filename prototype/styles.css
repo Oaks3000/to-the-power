@@ -337,6 +337,19 @@ h1 {
   padding: 0.56rem 0.82rem;
 }
 
+.tier2-only {
+  display: none;
+}
+
+body.tier2-active .tier2-only {
+  display: inline-flex;
+}
+
+body.tier2-active .panel.tier2-only,
+body.tier2-active .desk-object.tier2-only {
+  display: grid;
+}
+
 button:hover,
 button:focus-visible {
   border-color: color-mix(in srgb, var(--accent) 48%, var(--line) 52%);
@@ -664,7 +677,8 @@ body:not(.details-expanded) #supplement-surface {
 .action-result,
 .event-log,
 .retrospective-summary,
-.leaderboard-summary {
+.leaderboard-summary,
+.whip-queue {
   display: grid;
   gap: 0.55rem;
 }
@@ -770,6 +784,27 @@ body:not(.details-expanded) #supplement-surface {
   border-radius: 12px;
   background: #fff;
   padding: 0.6rem 0.7rem;
+}
+
+.whip-item {
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: #fff;
+  padding: 0.6rem 0.7rem;
+}
+
+.whip-item p {
+  color: var(--muted);
+  margin-top: 0.25rem;
+}
+
+.whip-item.level-critical {
+  border-color: rgba(163, 38, 38, 0.58);
+  background: #fff3f1;
+}
+
+.whip-item.level-high {
+  border-color: rgba(143, 60, 45, 0.45);
 }
 
 .progression-card p,
