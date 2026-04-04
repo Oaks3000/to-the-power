@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>To The Power Prototype - Tier 1 Shell</title>
+    <link rel="stylesheet" href="/prototype/styles.css" />
+  </head>
+  <body>
+    <nav class="skip-links" aria-label="Skip links">
+      <a href="#tray-anchor">Skip to In-Tray</a>
+      <a href="#packet-focus">Skip to active packet</a>
+      <a href="#phone-surface">Skip to smartphone</a>
+      <a class="debug-only" href="#collision-surface">Skip to collision queue</a>
+    </nav>
+    <main class="shell">
+      <header class="topbar">
+        <div>
+          <p class="eyebrow">Playtest Build</p>
+          <h1>Tier 1 Desk</h1>
+        </div>
+        <p id="status" class="status" role="status">Booting desk shell…</p>
+      </header>
+      <section id="next-action" class="next-action" aria-live="polite">
+        Open the next brief from In-Tray to begin.
+      </section>
+
+      <section id="interrupt" class="interrupt hidden" aria-live="assertive" aria-label="Urgent interruption">
+        <div>
+          <p class="interrupt-kicker">Urgent interruption</p>
+          <h2 id="interrupt-title">Crisis desk takeover</h2>
+          <p id="interrupt-body">Immediate action is required.</p>
+        </div>
+        <div class="interrupt-actions">
+          <button id="interrupt-return" type="button">Return to active task</button>
+          <button id="interrupt-dismiss" type="button">Acknowledge</button>
+        </div>
+      </section>
+
+      <section class="desk" aria-label="Tier 1 desk">
+        <aside class="anchor-column" aria-label="Desk anchors">
+          <button id="tray-anchor" class="desk-object tray" type="button">
+            <span class="object-title">In-Tray</span>
+            <span id="tray-state" class="object-meta">idle</span>
+          </button>
+          <button id="phone-anchor" class="desk-object" type="button">
+            <span class="object-title">Smartphone</span>
+            <span class="object-meta">fallout</span>
+          </button>
+          <button id="record-anchor" class="desk-object" type="button">
+            <span class="object-title">The Record</span>
+            <span class="object-meta">official</span>
+          </button>
+          <button id="bubble-anchor" class="desk-object" type="button">
+            <span class="object-title">The Bubble</span>
+            <span class="object-meta">rumour</span>
+          </button>
+          <button id="supplement-anchor" class="desk-object" type="button">
+            <span class="object-title">The Supplement</span>
+            <span class="object-meta">optional</span>
+          </button>
+        </aside>
+
+        <section class="packet-zone" aria-label="Active packet zone">
+          <header class="zone-header">
+            <div>
+              <h2>Current Brief</h2>
+              <p id="packet-count" class="meta">0 packets</p>
+            </div>
+            <div class="zone-actions">
+              <button id="packet-fullscreen-toggle" type="button">Fullscreen packet</button>
+              <button id="packet-fullscreen-close" class="hidden" type="button">Close fullscreen</button>
+              <button id="open-next" type="button">Open brief from In-Tray</button>
+            </div>
+          </header>
+          <div id="packet-focus" class="packet-focus" tabindex="-1" aria-live="polite"></div>
+          <div id="packets" class="packet-queue" aria-label="Packet queue"></div>
+        </section>
+
+        <aside class="surface-column" aria-label="Support surfaces">
+          <section id="diary-surface" class="surface-card" aria-label="Diary and controls" tabindex="-1">
+            <header class="surface-header">
+              <h2>Desk Controls</h2>
+              <span id="focus-order-stamp" class="meta debug-only">focus order set</span>
+            </header>
+            <div class="controls">
+              <label class="debug-only">
+                School year
+                <select id="school-year">
+                  <option value="Y9">Year 9</option>
+                  <option value="Y10">Year 10</option>
+                  <option value="Y11">Year 11</option>
+                </select>
+              </label>
+              <label>
+                Advance hours
+                <input id="advance-hours" type="number" min="1" step="1" value="6" />
+              </label>
+              <div class="button-row">
+                <button id="advance" type="button">Advance time</button>
+                <button id="refresh" class="debug-only" type="button">Refresh batch</button>
+                <button id="restart" class="debug-only" type="button">Restart shell</button>
+              </div>
+              <fieldset class="accessibility-controls">
+                <legend>Accessibility modes</legend>
+                <label class="toggle-row">
+                  <input id="clean-read-toggle" type="checkbox" />
+                  Clean-read and contrast simplification
+                </label>
+                <label class="toggle-row">
+                  <input id="reduced-motion-toggle" type="checkbox" />
+                  Reduced motion override
+                </label>
+              </fieldset>
+              <p class="meta keyboard-hint">Shortcuts: `t` tray, `p` packet, `s` phone, `r` record, `b` bubble, `u` supplement, `d` diary.</p>
+            </div>
+          </section>
+
+          <section id="clock-surface" class="surface-card" aria-label="Clock" tabindex="-1">
+            <header class="surface-header">
+              <h2>Clock</h2>
+              <span id="tempo-state" class="meta">tempo</span>
+            </header>
+            <p id="clock-readout" class="clock-readout">tempo unknown</p>
+            <p id="audio-state" class="meta">audio cues off</p>
+            <button id="audio-toggle" type="button">Enable audio cues</button>
+          </section>
+
+          <section class="surface-card lamp-card debug-only" aria-label="Lamp and save path">
+            <header class="surface-header">
+              <h2>Lamp</h2>
+            </header>
+            <button id="lamp-anchor" type="button">Save/Quit fallback (status only)</button>
+          </section>
+        </aside>
+      </section>
+
+      <section class="detail-grid" aria-label="Consequences and diagnostics">
+        <article id="record-surface" class="panel" tabindex="-1">
+          <div class="panel-header">
+            <h2>Public Briefing</h2>
+            <span id="summary-stamp" class="meta debug-only"></span>
+          </div>
+          <div id="record-stat" class="record-stat">
+            <p class="meta">Record lens</p>
+            <p>No major state movement recorded yet.</p>
+          </div>
+          <dl id="summary" class="summary debug-only"></dl>
+        </article>
+
+        <article class="panel debug-only">
+          <div class="panel-header">
+            <h2>Progression</h2>
+            <span id="promotion-stamp" class="meta"></span>
+          </div>
+          <div id="progression" class="progression"></div>
+        </article>
+
+        <article id="phone-surface" class="panel" tabindex="-1">
+          <div class="panel-header">
+            <h2>Latest Consequences</h2>
+            <span id="action-type" class="meta debug-only">none yet</span>
+          </div>
+          <div id="phone-batches" class="phone-batches">
+            <p>No fallout updates queued yet.</p>
+          </div>
+          <div id="action-result" class="action-result">
+            <p>No challenge outcome or time advance has been submitted yet.</p>
+          </div>
+        </article>
+
+        <article id="bubble-surface" class="panel panel-wide" tabindex="-1">
+          <div class="panel-header">
+            <h2>Outcome Log</h2>
+            <span id="event-count" class="meta debug-only">0 emitted</span>
+          </div>
+          <div id="bubble-lead" class="bubble-lead">
+            <h3>Shadow lead</h3>
+            <p>No narrative lead is active yet.</p>
+          </div>
+          <div id="event-log" class="event-log">
+            <p>No events emitted yet.</p>
+          </div>
+        </article>
+
+        <article id="collision-surface" class="panel panel-wide debug-only" tabindex="-1">
+          <div class="panel-header">
+            <h2>Collision Queue</h2>
+            <span id="collision-stamp" class="meta">priority order</span>
+          </div>
+          <div id="collision-queue" class="collision-queue">
+            <p>No queue pressure.</p>
+          </div>
+        </article>
+
+        <article id="supplement-surface" class="panel panel-wide" tabindex="-1">
+          <div class="panel-header">
+            <h2>Background Briefings</h2>
+            <span id="supplement-stamp" class="meta">optional</span>
+          </div>
+          <div id="supplement-list" class="supplement-list">
+            <p>No supplementary items queued.</p>
+          </div>
+        </article>
+      </section>
+    </main>
+
+    <script type="module" src="/prototype/app.js"></script>
+  </body>
+</html>
