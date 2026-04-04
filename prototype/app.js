@@ -370,7 +370,11 @@ function buildSmartphoneBatch(action, summary, deltas, isUrgent) {
   const updates = [];
 
   if (action.response.warnings.length > 0) {
-    updates.push(...action.response.warnings.map((warning) => `warning:${warning.code}`));
+    if (DEBUG_MODE) {
+      updates.push(...action.response.warnings.map((warning) => `warning:${warning.code}`));
+    } else {
+      updates.push("Urgent warning received");
+    }
   }
 
   if (deltas.publicApproval !== 0) {
@@ -383,10 +387,10 @@ function buildSmartphoneBatch(action, summary, deltas, isUrgent) {
     updates.push(`dark index ${signedDelta(deltas.darkIndex)}`);
   }
   if (updates.length === 0 && action.response.events.length > 0) {
-    updates.push(`events:${action.response.events.length} routed`);
+    updates.push(DEBUG_MODE ? `events:${action.response.events.length} routed` : "Outcome updates received");
   }
   if (updates.length === 0) {
-    updates.push("no measurable fallout movement");
+    updates.push(DEBUG_MODE ? "no measurable fallout movement" : "No major change yet");
   }
 
   falloutBatchCounter += 1;
@@ -524,7 +528,7 @@ function renderFalloutSurfaces() {
 
   if (smartphoneBatches.length === 0) {
     elements.phoneBatches.replaceChildren(
-      Object.assign(document.createElement("p"), { textContent: "No fallout updates queued yet." })
+      Object.assign(document.createElement("p"), { textContent: "No new consequences yet." })
     );
   } else {
     elements.phoneBatches.replaceChildren(
@@ -694,21 +698,21 @@ function summarizeEventForPlayer(event) {
         ? "Answer submitted correctly."
         : "Answer submitted incorrectly.";
     case "ChallengeSucceeded":
-      return "Challenge passed. Confidence improves.";
+      return "Answer accepted.";
     case "ChallengeFailed":
-      return "Challenge missed. Consequences applied.";
+      return "Answer missed.";
     case "TimeAdvanced":
       return `Time advanced by ${event.payload.hours}h.`;
     case "TempoChanged":
       return `Tempo shifted to ${formatTempo(event.payload.tempo)}.`;
     case "RoleChanged":
-      return "Role updated.";
+      return "Role changed.";
     case "RemediationAssigned":
       return "Remediation task assigned.";
     case "TimedChallengeStarted":
-      return "Timed challenge has started.";
+      return "Timed task started.";
     case "TimedChallengeExpired":
-      return "Timed challenge expired.";
+      return "Timed task expired.";
     default:
       return "State updated.";
   }
@@ -718,9 +722,7 @@ function renderActionResult() {
   if (!lastAction) {
     elements.actionType.textContent = "none yet";
     elements.actionResult.replaceChildren(
-      Object.assign(document.createElement("p"), {
-        textContent: "No challenge outcome or time advance has been submitted yet."
-      })
+      Object.assign(document.createElement("p"), { textContent: "No action taken yet." })
     );
     elements.eventCount.textContent = "0 emitted";
     elements.eventLog.replaceChildren(
@@ -740,11 +742,13 @@ function renderActionResult() {
   heading.textContent = lastAction.heading;
 
   const summary = document.createElement("p");
-  summary.textContent = `${formatTempo(lastAction.response.summary.currentTempo)} at ${lastAction.response.summary.timeHours}h after ${lastAction.response.events.length} event${lastAction.response.events.length === 1 ? "" : "s"}.`;
+  summary.textContent = DEBUG_MODE
+    ? `${formatTempo(lastAction.response.summary.currentTempo)} at ${lastAction.response.summary.timeHours}h after ${lastAction.response.events.length} event${lastAction.response.events.length === 1 ? "" : "s"}.`
+    : `${lastAction.response.events.length} update${lastAction.response.events.length === 1 ? "" : "s"} applied.`;
 
   actionCard.append(heading, summary);
 
-  if (lastAction.response.warnings.length > 0) {
+  if (DEBUG_MODE && lastAction.response.warnings.length > 0) {
     const warnings = document.createElement("p");
     warnings.textContent = `Warnings: ${lastAction.response.warnings.map((warning) => warning.code).join(", ")}`;
     actionCard.append(warnings);
@@ -755,7 +759,7 @@ function renderActionResult() {
   elements.eventCount.textContent = `${lastAction.response.events.length} emitted`;
   if (lastAction.response.events.length === 0) {
     elements.eventLog.replaceChildren(
-      Object.assign(document.createElement("p"), { textContent: "Action emitted no events." })
+      Object.assign(document.createElement("p"), { textContent: "No visible update from the last action." })
     );
     return;
   }
@@ -801,7 +805,10 @@ function handleChallengeOutcome(packet, correct, numericAnswer) {
   };
   applyFalloutRouting(lastAction);
   refreshPackets();
-  setStatus(`Submitted ${packet.challenge.topic} as ${correct ? "correct" : "incorrect"}${answerSnippet}.`);
+  setStatus(DEBUG_MODE
+    ? `Submitted ${packet.challenge.topic} as ${correct ? "correct" : "incorrect"}${answerSnippet}.`
+    : (correct ? "Answer submitted. Marked correct." : "Answer submitted. Marked incorrect.")
+  );
 }
 
 function handleAdvanceTime() {
@@ -829,11 +836,11 @@ function handleAdvanceTime() {
 
 function renderTrayState(state, packetCount) {
   elements.trayState.textContent = state;
-  elements.packetCount.textContent = `${packetCount} packet${packetCount === 1 ? "" : "s"} in queue`;
+  elements.packetCount.textContent = `${packetCount} brief${packetCount === 1 ? "" : "s"} waiting`;
   elements.openNext.disabled = packetCount === 0;
   elements.trayAnchor.setAttribute(
     "aria-label",
-    `In-Tray ${state}. ${packetCount} packet${packetCount === 1 ? "" : "s"} available.`
+    `In-Tray ${state}. ${packetCount} brief${packetCount === 1 ? "" : "s"} available.`
   );
 }
 
@@ -847,14 +854,14 @@ function renderPacket(packet, index) {
 
   const kicker = document.createElement("p");
   kicker.className = "doc-kicker";
-  kicker.textContent = isCrisisVariant ? "Crisis packet" : "Event/Decision brief";
+  kicker.textContent = isCrisisVariant ? "Urgent brief" : "Brief";
   article.append(kicker);
 
   const header = document.createElement("div");
   header.className = "packet-header";
 
   const title = document.createElement("h3");
-  title.textContent = packet.eventCard?.title ?? `Packet ${index + 1}`;
+  title.textContent = packet.eventCard?.title ?? `Brief ${index + 1}`;
 
   const badge = document.createElement("span");
   badge.className = "badge";
@@ -869,7 +876,12 @@ function renderPacket(packet, index) {
     const timer = packet.challenge.timed && packet.challenge.timerSeconds
       ? `Timed: ${packet.challenge.timerSeconds}s`
       : `Mode: ${packet.challenge.mode}`;
-    article.append(buildSection("Decision task", packet.challenge.prompt, `${packet.challenge.topic} | ${timer}`));
+    const taskMeta = DEBUG_MODE
+      ? `${packet.challenge.topic} | ${timer}`
+      : packet.challenge.timed && packet.challenge.timerSeconds
+        ? `Timed task: ${packet.challenge.timerSeconds}s`
+        : "Standard task";
+    article.append(buildSection("Decision task", packet.challenge.prompt, taskMeta));
 
     const form = document.createElement("form");
     form.className = "challenge-form";
@@ -939,7 +951,7 @@ function renderPacket(packet, index) {
         correct = resolveChallengeCorrectness(packet, answerInput.value);
       }
       if (correct === undefined) {
-        setStatus("Could not grade this answer automatically. Use debug mode to force outcome if needed.");
+        setStatus("Couldn't grade that answer. Try a standard numeric format.");
         return;
       }
       handleChallengeOutcome(packet, correct, answerInput.value);
@@ -973,7 +985,7 @@ function renderPacketFocus() {
     elements.packetFullscreenToggle.disabled = true;
     elements.packetFocus.replaceChildren(
       Object.assign(document.createElement("p"), {
-        textContent: "No active packet selected. Open the tray to pull the next packet into focus."
+        textContent: "No brief open. Use In-Tray to open the next brief."
       })
     );
     elements.packetFocus.removeAttribute("aria-label");
@@ -1017,7 +1029,7 @@ function renderPacketQueue() {
       const button = document.createElement("button");
       button.type = "button";
       button.className = `queue-item${index === activePacketIndex ? " active" : ""}`;
-      button.textContent = packet.eventCard?.title ?? `Packet ${index + 1}`;
+      button.textContent = packet.eventCard?.title ?? `Brief ${index + 1}`;
       button.addEventListener("click", () => {
         setActivePacket(index);
       });
@@ -1056,7 +1068,7 @@ function renderNextAction(trayState) {
 
 function openNextPacketFromTray() {
   if (currentPackets.length === 0) {
-    setStatus("In-Tray is idle. No packet available to open.");
+    setStatus("In-Tray is clear. Advance time for the next brief.");
     return;
   }
 
@@ -1065,7 +1077,7 @@ function openNextPacketFromTray() {
   if (isNarrowViewport()) {
     setPacketFullscreen(true);
   }
-  setStatus(`Opened packet ${nextIndex + 1} from In-Tray.`);
+  setStatus(`Opened brief ${nextIndex + 1} from In-Tray.`);
 }
 
 function findPrimaryTaskTarget() {
@@ -1096,20 +1108,20 @@ function maybeRenderInterrupt(summary, trayState) {
     elements.interruptBody.textContent = top.detail;
   } else if (urgentFallout) {
     elements.interruptTitle.textContent = "Urgent fallout alert";
-    elements.interruptBody.textContent = "High-priority consequences were routed to Smartphone. Use return to continue the active packet path.";
+    elements.interruptBody.textContent = "High-priority consequences need attention. Use return to continue your current brief.";
   } else {
     elements.interruptTitle.textContent = `${formatTempo(summary.currentTempo)} pressure state`;
-    elements.interruptBody.textContent = "Urgent state is active. Use In-Tray or active packet to clear priority work.";
+    elements.interruptBody.textContent = "Urgency is high. Use In-Tray or your current brief to clear priority work.";
   }
   elements.interruptDismiss.onclick = () => {
     dismissedInterruptKey = interruptKey;
     elements.interrupt.classList.add("hidden");
-    setStatus("Urgent interruption acknowledged. Priority controls remain available.");
+    setStatus("Urgent alert acknowledged.");
   };
   elements.interruptReturn.onclick = () => {
     const target = findPrimaryTaskTarget();
     target.focus();
-    setStatus("Returned to highest-priority task path.");
+    setStatus("Returned to the main task.");
   };
 }
 
@@ -1164,7 +1176,7 @@ function refreshPackets() {
   }
 
   elements.focusOrderStamp.textContent = SURFACE_FOCUS_ORDER.join(" -> ");
-  setStatus(DEBUG_MODE ? `Tier 1 shell rendered. Tray state: ${trayState}.` : "Desk updated.");
+  setStatus(DEBUG_MODE ? `Tier 1 shell rendered. Tray state: ${trayState}.` : "Ready.");
 }
 
 function focusSurface(surface) {
@@ -1189,7 +1201,7 @@ async function loadBundle() {
 }
 
 async function boot() {
-  setStatus("Loading vertical slice content…");
+  setStatus("Loading briefing content…");
   const bundle = await loadBundle();
   lastAction = null;
   dismissedInterruptKey = null;
@@ -1223,11 +1235,11 @@ function wireEvents() {
   });
   elements.packetFullscreenToggle.addEventListener("click", () => {
     setPacketFullscreen(true);
-    setStatus("Packet switched to fullscreen view.");
+    setStatus("Brief opened in fullscreen.");
   });
   elements.packetFullscreenClose.addEventListener("click", () => {
     setPacketFullscreen(false);
-    setStatus("Returned from fullscreen packet view.");
+    setStatus("Exited fullscreen.");
   });
   elements.audioToggle.addEventListener("click", () => {
     audioEnabled = !audioEnabled;
@@ -1279,19 +1291,19 @@ function wireEvents() {
 
   elements.phoneAnchor.addEventListener("click", () => {
     focusSurface(elements.phoneSurface);
-    setStatus("Smartphone anchor opened immediate fallout surface.");
+    setStatus("Opened latest consequences.");
   });
   elements.recordAnchor.addEventListener("click", () => {
     focusSurface(elements.recordSurface);
-    setStatus("The Record anchor opened official summary surface.");
+    setStatus("Opened public briefing.");
   });
   elements.bubbleAnchor.addEventListener("click", () => {
     focusSurface(elements.bubbleSurface);
-    setStatus("The Bubble anchor opened narrative event wire.");
+    setStatus("Opened outcome log.");
   });
   elements.supplementAnchor.addEventListener("click", () => {
     focusSurface(elements.supplementSurface);
-    setStatus("The Supplement anchor opened optional enrichment surface.");
+    setStatus("Opened background briefings.");
   });
   elements.lampAnchor.addEventListener("click", () => {
     setStatus("Lamp fallback activated. Save/Quit action remains available through explicit controls.");
@@ -1305,7 +1317,7 @@ function wireEvents() {
 
     if (event.key === "Escape" && packetFullscreen) {
       setPacketFullscreen(false);
-      setStatus("Exited fullscreen packet view with Escape.");
+      setStatus("Exited fullscreen.");
       return;
     }
 
