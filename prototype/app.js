@@ -726,9 +726,7 @@ function renderActionResult() {
     );
     elements.eventCount.textContent = "0 emitted";
     elements.eventLog.replaceChildren(
-      Object.assign(document.createElement("p"), {
-        textContent: "No events emitted yet."
-      })
+      Object.assign(document.createElement("p"), { textContent: "No outcome updates yet." })
     );
     return;
   }
@@ -870,7 +868,12 @@ function renderPacket(packet, index) {
   header.append(title, badge);
   article.append(header);
 
-  article.append(buildSection("Briefing", packet.eventCard?.description ?? "No event card supplied for this packet."));
+  article.append(
+    buildSection(
+      "Briefing",
+      packet.eventCard?.description ?? (DEBUG_MODE ? "No event card supplied for this packet." : "Briefing content unavailable.")
+    )
+  );
 
   if (packet.challenge) {
     const timer = packet.challenge.timed && packet.challenge.timerSeconds
@@ -969,11 +972,13 @@ function renderPacket(packet, index) {
     const sceneBody = document.createElement("p");
     sceneBody.textContent = packet.scene.text;
 
-    const sceneMeta = document.createElement("p");
-    sceneMeta.className = "meta";
-    sceneMeta.textContent = `NPC: ${packet.scene.npcId}`;
-
-    sceneSection.append(sceneHeading, sceneBody, sceneMeta);
+    sceneSection.append(sceneHeading, sceneBody);
+    if (DEBUG_MODE) {
+      const sceneMeta = document.createElement("p");
+      sceneMeta.className = "meta";
+      sceneMeta.textContent = `NPC: ${packet.scene.npcId}`;
+      sceneSection.append(sceneMeta);
+    }
     article.append(sceneSection);
   }
 
@@ -1104,8 +1109,10 @@ function maybeRenderInterrupt(summary, trayState) {
     elements.interruptTitle.textContent = "Crisis interruption";
     elements.interruptBody.textContent = top.detail;
   } else if (top?.type === "timed_challenge") {
-    elements.interruptTitle.textContent = "Timed challenge pressure";
-    elements.interruptBody.textContent = top.detail;
+    elements.interruptTitle.textContent = "Time pressure";
+    elements.interruptBody.textContent = DEBUG_MODE
+      ? top.detail
+      : "A timed task is active. Return to your current brief and respond quickly.";
   } else if (urgentFallout) {
     elements.interruptTitle.textContent = "Urgent fallout alert";
     elements.interruptBody.textContent = "High-priority consequences need attention. Use return to continue your current brief.";
