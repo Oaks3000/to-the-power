@@ -617,8 +617,8 @@ function buildCollisionQueue(summary, trayState) {
   if (hasTimedPacket) {
     items.push({
       type: "timed_challenge",
-      title: "Timed challenge pressure",
-      detail: "Active packet contains timed challenge constraints.",
+      title: "Time pressure",
+      detail: "A timed task is active in your current brief.",
       priority: COLLISION_PRIORITY.timed_challenge
     });
   }
@@ -864,7 +864,7 @@ function renderFalloutSurfaces() {
 
   if (smartphoneBatches.length === 0) {
     elements.phoneBatches.replaceChildren(
-      Object.assign(document.createElement("p"), { textContent: "No fallout updates queued yet." })
+      Object.assign(document.createElement("p"), { textContent: "No consequences recorded yet." })
     );
   } else {
     elements.phoneBatches.replaceChildren(
@@ -1178,6 +1178,31 @@ function buildSection(title, body, meta) {
   return section;
 }
 
+function summarizeEventForPlayer(event) {
+  switch (event.type) {
+    case "ChallengeAttempted":
+      return "Answer submitted.";
+    case "ChallengeSucceeded":
+      return "Answer accepted.";
+    case "ChallengeFailed":
+      return "Answer missed.";
+    case "TimeAdvanced":
+      return `Time advanced by ${event.payload.hours}h.`;
+    case "TempoChanged":
+      return "Tempo changed.";
+    case "RoleChanged":
+      return "Role changed.";
+    case "RemediationAssigned":
+      return "Support task assigned.";
+    case "TimedChallengeStarted":
+      return "Timed task started.";
+    case "TimedChallengeExpired":
+      return "Timed task expired.";
+    default:
+      return "State updated.";
+  }
+}
+
 function renderActionResult() {
   if (!lastAction) {
     elements.actionType.textContent = "none yet";
@@ -1189,7 +1214,7 @@ function renderActionResult() {
     elements.eventCount.textContent = "0 emitted";
     elements.eventLog.replaceChildren(
       Object.assign(document.createElement("p"), {
-        textContent: "No events emitted yet."
+        textContent: "No outcome updates yet."
       })
     );
     return;
@@ -1233,7 +1258,7 @@ function renderActionResult() {
       title.textContent = `${index + 1}. Event`;
 
       const body = document.createElement("p");
-      body.textContent = `${event.type} at ${event.atHour}h.`;
+      body.textContent = `${summarizeEventForPlayer(event)} (${event.atHour}h)`;
 
       card.append(title, body);
       return card;
@@ -1293,11 +1318,11 @@ function handleAdvanceTime() {
 
 function renderTrayState(state, packetCount) {
   elements.trayState.textContent = state;
-  elements.packetCount.textContent = `${packetCount} packet${packetCount === 1 ? "" : "s"} in queue`;
+  elements.packetCount.textContent = `${packetCount} brief${packetCount === 1 ? "" : "s"} waiting`;
   elements.openNext.disabled = packetCount === 0;
   elements.trayAnchor.setAttribute(
     "aria-label",
-    `In-Tray ${state}. ${packetCount} packet${packetCount === 1 ? "" : "s"} available.`
+    `In-Tray ${state}. ${packetCount} brief${packetCount === 1 ? "" : "s"} available.`
   );
 }
 
@@ -1327,7 +1352,7 @@ function renderPacket(packet, index) {
   header.append(title, badge);
   article.append(header);
 
-  article.append(buildSection("Briefing", packet.eventCard?.description ?? "No event card supplied for this packet."));
+  article.append(buildSection("Briefing", packet.eventCard?.description ?? "Briefing content unavailable."));
 
   if (packet.challenge) {
     const timer = packet.challenge.timed && packet.challenge.timerSeconds
@@ -1390,11 +1415,7 @@ function renderPacket(packet, index) {
     const sceneBody = document.createElement("p");
     sceneBody.textContent = packet.scene.text;
 
-    const sceneMeta = document.createElement("p");
-    sceneMeta.className = "meta";
-    sceneMeta.textContent = `NPC: ${packet.scene.npcId}`;
-
-    sceneSection.append(sceneHeading, sceneBody, sceneMeta);
+    sceneSection.append(sceneHeading, sceneBody);
     article.append(sceneSection);
   }
 
@@ -1565,8 +1586,8 @@ function maybeRenderInterrupt(summary, trayState) {
     elements.interruptTitle.textContent = "Crisis interruption";
     elements.interruptBody.textContent = top.detail;
   } else if (top?.type === "timed_challenge") {
-    elements.interruptTitle.textContent = "Timed challenge pressure";
-    elements.interruptBody.textContent = top.detail;
+    elements.interruptTitle.textContent = "Time pressure";
+    elements.interruptBody.textContent = "A timed task is active. Return to your current brief and respond quickly.";
   } else if (urgentFallout) {
     elements.interruptTitle.textContent = "Urgent fallout alert";
     elements.interruptBody.textContent = "High-priority consequences were routed to Smartphone. Use return to continue the active packet path.";
