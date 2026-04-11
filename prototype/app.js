@@ -1043,6 +1043,43 @@ function renderPacketQueue() {
   );
 }
 
+function getPrimaryTaskTarget() {
+  if (activePacketIndex >= 0) {
+    const submitButton = elements.packetFocus.querySelector("button[type=\"submit\"]");
+    if (submitButton) {
+      return { target: submitButton, label: "submit answer" };
+    }
+    const firstAction = elements.packetFocus.querySelector("input, button");
+    if (firstAction) {
+      return { target: firstAction, label: "continue this brief" };
+    }
+    return { target: elements.packetFocus, label: "continue this brief" };
+  }
+  return { target: elements.openNext, label: "open next brief" };
+}
+
+function applyUrgencyHighlights(isUrgent) {
+  elements.trayAnchor.classList.remove("urgent-target");
+  elements.openNext.classList.remove("urgent-target");
+  elements.packetFocus.classList.remove("urgent-target");
+  elements.nextAction?.classList.remove("urgent");
+  const queueActive = elements.packets.querySelector(".queue-item.active");
+  if (queueActive) {
+    queueActive.classList.remove("urgent-target");
+  }
+
+  if (!isUrgent) {
+    return;
+  }
+
+  elements.trayAnchor.classList.add("urgent-target");
+  elements.nextAction?.classList.add("urgent");
+  const primary = getPrimaryTaskTarget();
+  if (primary.target instanceof HTMLElement) {
+    primary.target.classList.add("urgent-target");
+  }
+}
+
 function renderNextAction(trayState) {
   if (!elements.nextAction) {
     return;
@@ -1053,7 +1090,8 @@ function renderNextAction(trayState) {
   const isUrgentInterruptVisible = !elements.interrupt.classList.contains("hidden");
 
   if (isUrgentInterruptVisible) {
-    elements.nextAction.textContent = "Urgent item active. Return to active task and resolve it first.";
+    const primary = getPrimaryTaskTarget();
+    elements.nextAction.textContent = `Urgent now: ${primary.label}. Use the return button to jump straight there.`;
     return;
   }
   if (currentPackets.length === 0) {
@@ -1065,7 +1103,9 @@ function renderNextAction(trayState) {
     return;
   }
   if (activePacket?.challenge) {
-    elements.nextAction.textContent = "Read the brief, enter your numeric answer, then submit.";
+    elements.nextAction.textContent = trayState === "urgent"
+      ? "Urgent now: enter your answer and submit immediately."
+      : "Read the brief, enter your numeric answer, then submit.";
     return;
   }
   elements.nextAction.textContent = "Review this brief, then open the next one from In-Tray.";
@@ -1085,13 +1125,6 @@ function openNextPacketFromTray() {
   setStatus(`Opened brief ${nextIndex + 1} from In-Tray.`);
 }
 
-function findPrimaryTaskTarget() {
-  if (activePacketIndex >= 0) {
-    return elements.packetFocus.querySelector("input, button") || elements.packetFocus;
-  }
-  return elements.openNext;
-}
-
 function maybeRenderInterrupt(summary, trayState) {
   const top = collisionQueueItems[0];
   const urgentFallout = smartphoneBatches[0]?.urgent === true;
@@ -1106,13 +1139,13 @@ function maybeRenderInterrupt(summary, trayState) {
 
   elements.interrupt.classList.remove("hidden");
   if (top?.type === "crisis_interrupt") {
-    elements.interruptTitle.textContent = "Crisis interruption";
-    elements.interruptBody.textContent = top.detail;
+    elements.interruptTitle.textContent = "Urgent briefing";
+    elements.interruptBody.textContent = "A critical brief just landed. Use return now and clear your urgent brief first.";
   } else if (top?.type === "timed_challenge") {
     elements.interruptTitle.textContent = "Time pressure";
     elements.interruptBody.textContent = DEBUG_MODE
       ? top.detail
-      : "A timed task is active. Return to your current brief and respond quickly.";
+      : "A timed task is active. Use return now, answer, and submit quickly.";
   } else if (urgentFallout) {
     elements.interruptTitle.textContent = "Urgent fallout alert";
     elements.interruptBody.textContent = "High-priority consequences need attention. Use return to continue your current brief.";
@@ -1120,14 +1153,18 @@ function maybeRenderInterrupt(summary, trayState) {
     elements.interruptTitle.textContent = `${formatTempo(summary.currentTempo)} pressure state`;
     elements.interruptBody.textContent = "Urgency is high. Use In-Tray or your current brief to clear priority work.";
   }
+  const primary = getPrimaryTaskTarget();
+  elements.interruptReturn.textContent = primary.label === "submit answer"
+    ? "Return to: submit answer now"
+    : `Return to: ${primary.label}`;
   elements.interruptDismiss.onclick = () => {
     dismissedInterruptKey = interruptKey;
     elements.interrupt.classList.add("hidden");
     setStatus("Urgent alert acknowledged.");
   };
   elements.interruptReturn.onclick = () => {
-    const target = findPrimaryTaskTarget();
-    target.focus();
+    const currentPrimary = getPrimaryTaskTarget();
+    currentPrimary.target.focus();
     setStatus("Returned to the main task.");
   };
 }
@@ -1172,6 +1209,10 @@ function refreshPackets() {
   renderFalloutSurfaces();
   renderCollisionQueue();
   maybeRenderInterrupt(summary, trayState);
+  const isUrgent = Boolean(collisionQueueItems[0] && collisionQueueItems[0].priority <= 2)
+    || trayState === "urgent"
+    || smartphoneBatches[0]?.urgent === true;
+  applyUrgencyHighlights(isUrgent);
   renderNextAction(trayState);
 
   const topCollision = collisionQueueItems[0]?.type ?? "none";
