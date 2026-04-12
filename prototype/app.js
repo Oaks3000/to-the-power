@@ -120,6 +120,7 @@ let lastCollisionCueKey = "";
 let cleanReadEnabled = false;
 let reducedMotionEnabled = false;
 let challengeAnswerById = new Map();
+let timedDeferralCount = 0;
 
 function applyDebugMode() {
   document.body.classList.toggle("debug-mode", DEBUG_MODE);
@@ -407,6 +408,37 @@ function buildSmartphoneBatch(action, summary, deltas, isUrgent) {
   };
 }
 
+function buildTimedDeferralBatch(summary, deferrals) {
+  falloutBatchCounter += 1;
+  const actionsText = deferrals === 1 ? "action" : "actions";
+  return {
+    id: `batch-${falloutBatchCounter}`,
+    label: "timed brief deferred",
+    urgent: true,
+    tempo: summary.currentTempo,
+    severity: "critical",
+    updates: [
+      `Timed brief left unresolved for ${deferrals} ${actionsText}.`,
+      "Resolve the timed answer now to stop pressure climbing."
+    ]
+  };
+}
+
+function updateTimedDeferralCounter(action) {
+  const activeBefore = Number(action.beforeSummary?.activeTimedChallenges ?? 0) > 0;
+  const activeAfter = Number(action.response?.summary?.activeTimedChallenges ?? 0) > 0;
+
+  if (!activeAfter || action.kind === "challenge") {
+    timedDeferralCount = 0;
+    return 0;
+  }
+  if (activeBefore && action.kind === "time") {
+    timedDeferralCount += 1;
+    return timedDeferralCount;
+  }
+  return 0;
+}
+
 function applyFalloutRouting(action) {
   const deltas = extractSummaryDeltas(action.beforeSummary, action.response.summary);
   const summary = action.response.summary;
@@ -418,7 +450,12 @@ function applyFalloutRouting(action) {
     || deltas.pressRelationship <= -3;
 
   const batch = buildSmartphoneBatch(action, summary, deltas, isUrgent);
-  smartphoneBatches = [batch, ...smartphoneBatches].slice(0, 6);
+  const deferrals = updateTimedDeferralCounter(action);
+  if (deferrals > 0) {
+    smartphoneBatches = [buildTimedDeferralBatch(summary, deferrals), batch, ...smartphoneBatches].slice(0, 6);
+  } else {
+    smartphoneBatches = [batch, ...smartphoneBatches].slice(0, 6);
+  }
 
   const metric = getDominantRecordMetric(deltas, summary);
   recordLens = {
@@ -1273,6 +1310,7 @@ async function boot() {
   lastAction = null;
   dismissedInterruptKey = null;
   falloutBatchCounter = 0;
+  timedDeferralCount = 0;
   smartphoneBatches = [];
   recordLens = null;
   bubbleShadowLead = null;
