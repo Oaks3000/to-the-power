@@ -112,6 +112,10 @@
                   Reduced motion override
                 </label>
               </fieldset>
+              <label class="toggle-row">
+                <input id="rapid-run-toggle" type="checkbox" checked />
+                Rapid Run mode (target: 6 briefs)
+              </label>
               <p class="meta keyboard-hint">Shortcuts: `t` tray, `p` packet, `s` phone, `r` record, `b` bubble, `u` supplement, `d` diary.</p>
             </div>
           </section>
@@ -122,6 +126,11 @@
               <span id="tempo-state" class="meta">tempo</span>
             </header>
             <p id="clock-readout" class="clock-readout">tempo unknown</p>
+            <div class="run-hud" aria-live="polite">
+              <p id="rapid-run-progress" class="meta">Rapid Run: 0/6 briefs completed</p>
+              <p id="rapid-run-timed" class="meta">0 timed unresolved</p>
+              <p id="rapid-run-pressure" class="meta">steady consequence pressure</p>
+            </div>
             <p id="audio-state" class="meta">audio cues off</p>
             <button id="audio-toggle" type="button">Enable audio cues</button>
           </section>

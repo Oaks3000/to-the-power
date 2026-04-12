@@ -151,6 +151,12 @@ select {
   color: color-mix(in srgb, var(--ink) 86%, var(--accent) 14%);
 }
 
+.next-action.urgent {
+  border-color: rgba(163, 38, 38, 0.68);
+  background: linear-gradient(180deg, #fff1ee 0%, #ffe7e1 100%);
+  color: color-mix(in srgb, var(--ink) 78%, var(--urgent) 22%);
+}
+
 .eyebrow,
 .status,
 .meta,
@@ -464,6 +470,13 @@ a:focus-visible {
   background: #fff8f4;
 }
 
+.urgent-target {
+  border-color: rgba(163, 38, 38, 0.72) !important;
+  box-shadow:
+    0 0 0 2px rgba(163, 38, 38, 0.18),
+    var(--surface-shine) !important;
+}
+
 .controls {
   display: grid;
   gap: 0.55rem;
@@ -521,6 +534,18 @@ a:focus-visible {
 
 .clock-readout {
   color: var(--muted);
+}
+
+.run-hud {
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 0.45rem 0.55rem;
+  background: rgba(255, 255, 255, 0.76);
+  margin-bottom: 0.45rem;
+}
+
+.run-hud p + p {
+  margin-top: 0.2rem;
 }
 
 .collision-queue {

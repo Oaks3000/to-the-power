@@ -55,6 +55,10 @@ const elements = {
   phoneSurface: document.querySelector("#phone-surface"),
   progression: document.querySelector("#progression"),
   promotionStamp: document.querySelector("#promotion-stamp"),
+  rapidRunPressure: document.querySelector("#rapid-run-pressure"),
+  rapidRunProgress: document.querySelector("#rapid-run-progress"),
+  rapidRunTimed: document.querySelector("#rapid-run-timed"),
+  rapidRunToggle: document.querySelector("#rapid-run-toggle"),
   recordAnchor: document.querySelector("#record-anchor"),
   recordStat: document.querySelector("#record-stat"),
   recordSurface: document.querySelector("#record-surface"),
@@ -85,6 +89,8 @@ const SURFACE_FOCUS_ORDER = [
 ];
 
 const URGENT_TEMPOS = new Set(["crisis", "media_storm"]);
+const RAPID_RUN_TARGET = 6;
+const RAPID_RUN_AUTO_ADVANCE_HOURS = 2;
 const TEMPO_PROFILES = {
   recess: { visibleBatches: 2, updatesPerBatch: 2, audioFrequency: 220, pressureClass: "recess" },
   parliamentary: { visibleBatches: 3, updatesPerBatch: 3, audioFrequency: 260, pressureClass: "parliamentary" },
@@ -121,6 +127,8 @@ let cleanReadEnabled = false;
 let reducedMotionEnabled = false;
 let challengeAnswerById = new Map();
 let timedDeferralCount = 0;
+let rapidRunEnabled = true;
+let runBriefsCompleted = 0;
 
 function applyDebugMode() {
   document.body.classList.toggle("debug-mode", DEBUG_MODE);
@@ -212,6 +220,39 @@ function loadAccessibilityModes() {
 
 function getTempoProfile(tempo) {
   return TEMPO_PROFILES[tempo] ?? TEMPO_PROFILES.parliamentary;
+}
+
+function getRapidRunBurstCount(summary) {
+  if (!rapidRunEnabled) {
+    return undefined;
+  }
+  return URGENT_TEMPOS.has(summary.currentTempo) || summary.activeTimedChallenges > 0 ? 3 : 2;
+}
+
+function describeConsequencePressure(summary) {
+  const urgentRecentCount = smartphoneBatches.slice(0, 3).filter((batch) => batch.urgent).length;
+  if (collisionQueueItems.some((item) => item.type === "stacked_pressure")) {
+    return "stacked";
+  }
+  if (urgentRecentCount >= 2) {
+    return "high";
+  }
+  if (urgentRecentCount === 1 || summary.activeTimedChallenges > 0) {
+    return "elevated";
+  }
+  return "steady";
+}
+
+function renderRunHud(summary) {
+  if (!elements.rapidRunProgress || !elements.rapidRunTimed || !elements.rapidRunPressure) {
+    return;
+  }
+  const completed = runBriefsCompleted;
+  const goal = `${completed}/${RAPID_RUN_TARGET}`;
+  const mode = rapidRunEnabled ? "Rapid Run" : "Standard Run";
+  elements.rapidRunProgress.textContent = `${mode}: ${goal} briefs completed`;
+  elements.rapidRunTimed.textContent = `${summary.activeTimedChallenges} timed unresolved`;
+  elements.rapidRunPressure.textContent = `${describeConsequencePressure(summary)} consequence pressure`;
 }
 
 function setTempoVisualState(tempo) {
@@ -851,10 +892,40 @@ function handleChallengeOutcome(packet, correct, numericAnswer) {
     })
   };
   applyFalloutRouting(lastAction);
+  runBriefsCompleted += 1;
+  let autoAdvanced = false;
+  if (rapidRunEnabled) {
+    const beforeSummary = api.getStateSummary();
+    const response = api.advanceTime(RAPID_RUN_AUTO_ADVANCE_HOURS);
+    const rapidCycleAction = {
+      kind: "time",
+      beforeSummary,
+      label: "rapid cycle",
+      heading: `Rapid run auto-advanced by ${RAPID_RUN_AUTO_ADVANCE_HOURS}h`,
+      response
+    };
+    applyFalloutRouting(rapidCycleAction);
+    lastAction = rapidCycleAction;
+    autoAdvanced = true;
+  }
   refreshPackets();
-  setStatus(DEBUG_MODE
-    ? `Submitted ${packet.challenge.topic} as ${correct ? "correct" : "incorrect"}${answerSnippet}.`
-    : (correct ? "Answer submitted. Marked correct." : "Answer submitted. Marked incorrect.")
+  if (rapidRunEnabled && currentPackets.length > 0) {
+    setActivePacket(0);
+  }
+  if (rapidRunEnabled) {
+    if (runBriefsCompleted >= RAPID_RUN_TARGET) {
+      setStatus(`Run target reached: ${runBriefsCompleted}/${RAPID_RUN_TARGET} briefs completed.`);
+      return;
+    }
+    const resultText = correct ? "correct" : "incorrect";
+    const autoText = autoAdvanced ? ` Auto-advanced ${RAPID_RUN_AUTO_ADVANCE_HOURS}h to next cycle.` : "";
+    setStatus(`Answer ${resultText}. ${runBriefsCompleted}/${RAPID_RUN_TARGET} briefs completed.${autoText}`);
+    return;
+  }
+  setStatus(
+    DEBUG_MODE
+      ? `Submitted ${packet.challenge.topic} as ${correct ? "correct" : "incorrect"}${answerSnippet}.`
+      : (correct ? "Answer submitted. Marked correct." : "Answer submitted. Marked incorrect.")
   );
 }
 
@@ -1232,7 +1303,7 @@ function refreshPackets() {
 
   const summary = api.getStateSummary();
   const progression = api.getProgressionStatus();
-  currentPackets = api.getCurrentPacketBatch();
+  currentPackets = api.getCurrentPacketBatch(getRapidRunBurstCount(summary));
   latestSummary = summary;
 
   if (activePacketIndex >= currentPackets.length) {
@@ -1270,6 +1341,7 @@ function refreshPackets() {
     || smartphoneBatches[0]?.urgent === true;
   applyUrgencyHighlights(isUrgent);
   renderNextAction(trayState);
+  renderRunHud(summary);
 
   const topCollision = collisionQueueItems[0]?.type ?? "none";
   const cueKey = `${summary.currentTempo}:${topCollision}`;
@@ -1311,6 +1383,7 @@ async function boot() {
   dismissedInterruptKey = null;
   falloutBatchCounter = 0;
   timedDeferralCount = 0;
+  runBriefsCompleted = 0;
   smartphoneBatches = [];
   recordLens = null;
   bubbleShadowLead = null;
@@ -1328,6 +1401,7 @@ async function boot() {
     schoolYear: elements.schoolYear.value,
     contentBundle: bundle
   });
+  rapidRunEnabled = elements.rapidRunToggle ? elements.rapidRunToggle.checked : true;
   refreshPackets();
 }
 
@@ -1375,6 +1449,17 @@ function wireEvents() {
       applyAccessibilityModes();
       persistAccessibilityModes();
       setStatus(reducedMotionEnabled ? "Reduced-motion mode enabled." : "Reduced-motion mode disabled.");
+    });
+  }
+  if (elements.rapidRunToggle) {
+    elements.rapidRunToggle.addEventListener("change", () => {
+      rapidRunEnabled = elements.rapidRunToggle.checked;
+      if (latestSummary) {
+        refreshPackets();
+      }
+      setStatus(rapidRunEnabled
+        ? `Rapid Run enabled. Goal: ${RAPID_RUN_TARGET} briefs.`
+        : "Rapid Run disabled. Manual pacing restored.");
     });
   }
 
