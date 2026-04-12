@@ -92,6 +92,7 @@ const TEMPO_PROFILES = {
   media_storm: { visibleBatches: 6, updatesPerBatch: 5, audioFrequency: 390, pressureClass: "media_storm" }
 };
 const COLLISION_PRIORITY = {
+  stacked_pressure: 1,
   crisis_interrupt: 1,
   timed_challenge: 2,
   packet_resolution: 3,
@@ -411,6 +412,7 @@ function applyFalloutRouting(action) {
   const summary = action.response.summary;
   const isUrgent = action.response.warnings.length > 0
     || URGENT_TEMPOS.has(summary.currentTempo)
+    || summary.activeTimedChallenges > 0
     || deltas.darkIndex >= 2
     || deltas.publicApproval <= -3
     || deltas.pressRelationship <= -3;
@@ -436,6 +438,7 @@ function buildCollisionQueue(summary, trayState) {
   const items = [];
   const hasTimedPacket = currentPackets.some((packet) => Boolean(packet.challenge?.timed));
   const latestBatch = smartphoneBatches[0];
+  const hasUrgentConsequenceBatch = latestBatch?.urgent === true;
 
   if (URGENT_TEMPOS.has(summary.currentTempo)) {
     items.push({
@@ -443,6 +446,15 @@ function buildCollisionQueue(summary, trayState) {
       title: "Crisis interruption",
       detail: `${formatTempo(summary.currentTempo)} demands immediate prioritisation.`,
       priority: COLLISION_PRIORITY.crisis_interrupt
+    });
+  }
+
+  if (hasTimedPacket && hasUrgentConsequenceBatch) {
+    items.push({
+      type: "stacked_pressure",
+      title: "Stacked pressure",
+      detail: "Timed answer and urgent consequence updates are both active.",
+      priority: COLLISION_PRIORITY.stacked_pressure
     });
   }
 
@@ -1091,6 +1103,10 @@ function renderNextAction(trayState) {
 
   if (isUrgentInterruptVisible) {
     const primary = getPrimaryTaskTarget();
+    if (collisionQueueItems[0]?.type === "stacked_pressure") {
+      elements.nextAction.textContent = `Two urgent fronts are active. Urgent now: ${primary.label}. Use return to jump straight there.`;
+      return;
+    }
     elements.nextAction.textContent = `Urgent now: ${primary.label}. Use the return button to jump straight there.`;
     return;
   }
@@ -1141,6 +1157,9 @@ function maybeRenderInterrupt(summary, trayState) {
   if (top?.type === "crisis_interrupt") {
     elements.interruptTitle.textContent = "Urgent briefing";
     elements.interruptBody.textContent = "A critical brief just landed. Use return now and clear your urgent brief first.";
+  } else if (top?.type === "stacked_pressure") {
+    elements.interruptTitle.textContent = "Split-attention risk";
+    elements.interruptBody.textContent = "A timed answer and urgent consequence updates are both live. Use return now and finish the timed brief first.";
   } else if (top?.type === "timed_challenge") {
     elements.interruptTitle.textContent = "Time pressure";
     elements.interruptBody.textContent = DEBUG_MODE
