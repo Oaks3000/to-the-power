@@ -347,6 +347,34 @@ function getPacketKey(packet, index) {
   return `${packet.eventCard?.id ?? "none"}|${packet.challenge?.id ?? "none"}|${packet.scene?.id ?? "none"}|${index}`;
 }
 
+function getPoliticalChoiceSet(tempo) {
+  if (tempo === "crisis" || tempo === "media_storm") {
+    return {
+      intro: "Crisis pressure is active. Pick your tactical line before submitting.",
+      options: [
+        { id: "contain", label: "Contain narrative", status: "Political call set: contain narrative." },
+        { id: "counterattack", label: "Counterattack", status: "Political call set: counterattack." }
+      ]
+    };
+  }
+  if (tempo === "recess") {
+    return {
+      intro: "Lower tempo window. Decide whether to bank safety or push momentum.",
+      options: [
+        { id: "bank", label: "Bank goodwill", status: "Political call set: bank goodwill." },
+        { id: "push", label: "Push momentum", status: "Political call set: push momentum." }
+      ]
+    };
+  }
+  return {
+    intro: "Parliamentary tempo. Choose your line before submitting.",
+    options: [
+      { id: "steady", label: "Steady line", status: "Political call set: steady line." },
+      { id: "hard", label: "Hard line", status: "Political call set: hard line." }
+    ]
+  };
+}
+
 function extractSummaryDeltas(beforeSummary, afterSummary) {
   return {
     partyLoyaltyScore: afterSummary.partyLoyaltyScore - beforeSummary.partyLoyaltyScore,
@@ -508,15 +536,101 @@ function pushManualSmartphoneBatch(batch) {
   triagedBatchIds = new Set([...triagedBatchIds].filter((id) => activeIds.has(id)));
 }
 
-function applyPoliticalOutcome(packet, correct, summary) {
-  const packetKey = getPacketKey(packet, activePacketIndex);
-  const choice = politicalChoiceByPacketKey.get(packetKey);
-  if (!choice) {
-    return;
+function buildPoliticalOutcomeBatch(choice, correct, summary) {
+  if (choice === "contain") {
+    return correct
+      ? {
+        label: "containment holds",
+        urgent: false,
+        tempo: summary.currentTempo,
+        severity: "elevated",
+        updates: [
+          "You contained the narrative and the numbers backed you.",
+          "Crisis chatter cools while the desk regains control."
+        ]
+      }
+      : {
+        label: "containment cracks",
+        urgent: true,
+        tempo: summary.currentTempo,
+        severity: "critical",
+        updates: [
+          "Containment failed after a weak maths answer.",
+          "Urgent scrutiny expands across channels."
+        ]
+      };
   }
-
+  if (choice === "counterattack") {
+    return correct
+      ? {
+        label: "counterattack lands",
+        urgent: false,
+        tempo: summary.currentTempo,
+        severity: "high",
+        updates: [
+          "You counterattacked and defended with clean figures.",
+          "Opposition criticism loses momentum."
+        ]
+      }
+      : {
+        label: "counterattack backfires",
+        urgent: true,
+        tempo: summary.currentTempo,
+        severity: "critical",
+        updates: [
+          "Counterattack backfired after a weak maths answer.",
+          "Backlash is immediate; triage urgent fallout now."
+        ]
+      };
+  }
+  if (choice === "bank") {
+    return correct
+      ? {
+        label: "goodwill banked",
+        urgent: false,
+        tempo: summary.currentTempo,
+        severity: "normal",
+        updates: [
+          "You banked goodwill and delivered a strong answer.",
+          "Stakeholders stay calm heading into the next brief."
+        ]
+      }
+      : {
+        label: "goodwill spent",
+        urgent: true,
+        tempo: summary.currentTempo,
+        severity: "elevated",
+        updates: [
+          "Goodwill absorbed some damage from the weak answer.",
+          "Confidence dips and needs quick recovery."
+        ]
+      };
+  }
+  if (choice === "push") {
+    return correct
+      ? {
+        label: "momentum gained",
+        urgent: false,
+        tempo: summary.currentTempo,
+        severity: "elevated",
+        updates: [
+          "You pushed momentum and the maths held.",
+          "Your office gains initiative for the next cycle."
+        ]
+      }
+      : {
+        label: "momentum stalls",
+        urgent: true,
+        tempo: summary.currentTempo,
+        severity: "high",
+        updates: [
+          "Momentum push stalled after a weak answer.",
+          "Narrative control slips unless the next brief is clean."
+        ]
+      };
+  }
   if (choice === "steady") {
-    pushManualSmartphoneBatch(correct
+    return correct
       ? {
         label: "steady line held",
         urgent: false,
@@ -536,11 +650,9 @@ function applyPoliticalOutcome(packet, correct, summary) {
           "You held the line but the weak maths answer undermined it.",
           "Questions escalate unless the next brief lands cleanly."
         ]
-      });
-    return;
+      };
   }
-
-  pushManualSmartphoneBatch(correct
+  return correct
     ? {
       label: "hard line rewarded",
       urgent: false,
@@ -560,7 +672,16 @@ function applyPoliticalOutcome(packet, correct, summary) {
         "You took a hard line and the weak maths answer triggered backlash.",
         "Urgent consequences are building; triage and recover quickly."
       ]
-    });
+    };
+}
+
+function applyPoliticalOutcome(packet, correct, summary) {
+  const packetKey = getPacketKey(packet, activePacketIndex);
+  const choice = politicalChoiceByPacketKey.get(packetKey);
+  if (!choice) {
+    return;
+  }
+  pushManualSmartphoneBatch(buildPoliticalOutcomeBatch(choice, correct, summary));
 }
 
 function applyFalloutRouting(action) {
@@ -1203,33 +1324,25 @@ function renderPacket(packet, index) {
     decisionHeading.textContent = "Political call";
 
     const decisionBody = document.createElement("p");
-    decisionBody.textContent = "Choose your line before submitting. Maths quality determines whether this call stabilises or escalates fallout.";
+    const choiceSet = getPoliticalChoiceSet(latestSummary?.currentTempo ?? "parliamentary");
+    decisionBody.textContent = `${choiceSet.intro} Maths quality determines whether this call stabilises or escalates fallout.`;
 
     const decisionActions = document.createElement("div");
     decisionActions.className = "packet-actions political-actions";
     const selectedChoice = politicalChoiceByPacketKey.get(packetKey);
 
-    const steadyLine = document.createElement("button");
-    steadyLine.type = "button";
-    steadyLine.textContent = "Steady line";
-    steadyLine.classList.toggle("selected", selectedChoice === "steady");
-    steadyLine.addEventListener("click", () => {
-      politicalChoiceByPacketKey.set(packetKey, "steady");
-      renderPacketFocus();
-      setStatus("Political call set: steady line.");
+    choiceSet.options.forEach((option) => {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.textContent = option.label;
+      button.classList.toggle("selected", selectedChoice === option.id);
+      button.addEventListener("click", () => {
+        politicalChoiceByPacketKey.set(packetKey, option.id);
+        renderPacketFocus();
+        setStatus(option.status);
+      });
+      decisionActions.append(button);
     });
-
-    const hardLine = document.createElement("button");
-    hardLine.type = "button";
-    hardLine.textContent = "Hard line";
-    hardLine.classList.toggle("selected", selectedChoice === "hard");
-    hardLine.addEventListener("click", () => {
-      politicalChoiceByPacketKey.set(packetKey, "hard");
-      renderPacketFocus();
-      setStatus("Political call set: hard line.");
-    });
-
-    decisionActions.append(steadyLine, hardLine);
     decisionSection.append(decisionHeading, decisionBody, decisionActions);
     article.append(decisionSection);
 
