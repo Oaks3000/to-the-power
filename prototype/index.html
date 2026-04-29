@@ -24,6 +24,11 @@
       <section id="next-action" class="next-action" aria-live="polite">
         Open the next brief from In-Tray to begin.
       </section>
+      <section class="intel-strip" aria-label="Live desk intel">
+        <p id="intel-record" class="intel-chip">Record: no significant movement yet.</p>
+        <p id="intel-shadow" class="intel-chip">Narrative: no active shadow lead.</p>
+        <p id="intel-supplement" class="intel-chip">Supplement: nothing queued.</p>
+      </section>
 
       <section id="interrupt" class="interrupt hidden" aria-live="assertive" aria-label="Urgent interruption">
         <div>
@@ -144,7 +149,9 @@
         </aside>
       </section>
 
-      <section class="detail-grid" aria-label="Consequences and diagnostics">
+      <details class="detail-panels">
+        <summary>Detailed panels</summary>
+        <section class="detail-grid" aria-label="Consequences and diagnostics">
         <article id="record-surface" class="panel" tabindex="-1">
           <div class="panel-header">
             <h2>Public Briefing</h2>
@@ -211,7 +218,8 @@
             <p>No supplementary items queued.</p>
           </div>
         </article>
-      </section>
+        </section>
+      </details>
     </main>
 
     <script type="module" src="/prototype/app.js"></script>

@@ -42,6 +42,9 @@ const elements = {
   interruptDismiss: document.querySelector("#interrupt-dismiss"),
   interruptReturn: document.querySelector("#interrupt-return"),
   interruptTitle: document.querySelector("#interrupt-title"),
+  intelRecord: document.querySelector("#intel-record"),
+  intelShadow: document.querySelector("#intel-shadow"),
+  intelSupplement: document.querySelector("#intel-supplement"),
   lampAnchor: document.querySelector("#lamp-anchor"),
   nextAction: document.querySelector("#next-action"),
   openNext: document.querySelector("#open-next"),
@@ -727,6 +730,22 @@ function renderFalloutSurfaces() {
     });
     elements.supplementList.replaceChildren(list);
     elements.supplementStamp.textContent = `${supplementItems.length} queued`;
+  }
+
+  if (elements.intelRecord) {
+    elements.intelRecord.textContent = recordLens
+      ? `Record: ${recordLens.label} ${recordLens.delta} (${recordLens.value}).`
+      : "Record: no significant movement yet.";
+  }
+  if (elements.intelShadow) {
+    elements.intelShadow.textContent = bubbleShadowLead
+      ? `Narrative: ${bubbleShadowLead.headline}`
+      : "Narrative: no active shadow lead.";
+  }
+  if (elements.intelSupplement) {
+    elements.intelSupplement.textContent = supplementItems.length > 0
+      ? `Supplement: ${supplementItems.length} item${supplementItems.length === 1 ? "" : "s"} queued.`
+      : "Supplement: nothing queued.";
   }
 }
 

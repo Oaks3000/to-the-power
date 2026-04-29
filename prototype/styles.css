@@ -157,6 +157,22 @@ select {
   color: color-mix(in srgb, var(--ink) 78%, var(--urgent) 22%);
 }
 
+.intel-strip {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.45rem;
+  margin-bottom: 0.9rem;
+}
+
+.intel-chip {
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.78);
+  padding: 0.42rem 0.55rem;
+  color: var(--muted);
+  font-size: 0.82rem;
+}
+
 .eyebrow,
 .status,
 .meta,
@@ -634,6 +650,23 @@ body.tempo-media_storm .phone-batch.urgent {
   grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
+.detail-panels {
+  margin-top: 0.95rem;
+}
+
+.detail-panels > summary {
+  cursor: pointer;
+  color: var(--muted);
+  font-family: "Trebuchet MS", sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 0.72rem;
+}
+
+.detail-panels[open] > summary {
+  margin-bottom: 0.55rem;
+}
+
 .panel-wide {
   grid-column: span 3;
 }
@@ -826,6 +859,10 @@ body.tempo-media_storm .phone-batch.urgent {
   }
 
   .detail-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .intel-strip {
     grid-template-columns: 1fr;
   }
 
