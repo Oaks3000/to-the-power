@@ -52,6 +52,7 @@ const elements = {
   packets: document.querySelector("#packets"),
   phoneBatches: document.querySelector("#phone-batches"),
   phoneAnchor: document.querySelector("#phone-anchor"),
+  phoneMeta: document.querySelector("#phone-meta"),
   phoneSurface: document.querySelector("#phone-surface"),
   progression: document.querySelector("#progression"),
   promotionStamp: document.querySelector("#promotion-stamp"),
@@ -129,6 +130,7 @@ let challengeAnswerById = new Map();
 let timedDeferralCount = 0;
 let rapidRunEnabled = true;
 let runBriefsCompleted = 0;
+let triagedBatchIds = new Set();
 
 function applyDebugMode() {
   document.body.classList.toggle("debug-mode", DEBUG_MODE);
@@ -230,7 +232,10 @@ function getRapidRunBurstCount(summary) {
 }
 
 function describeConsequencePressure(summary) {
-  const urgentRecentCount = smartphoneBatches.slice(0, 3).filter((batch) => batch.urgent).length;
+  const urgentRecentCount = smartphoneBatches
+    .slice(0, 3)
+    .filter((batch) => batch.urgent && !triagedBatchIds.has(batch.id))
+    .length;
   if (collisionQueueItems.some((item) => item.type === "stacked_pressure")) {
     return "stacked";
   }
@@ -497,6 +502,8 @@ function applyFalloutRouting(action) {
   } else {
     smartphoneBatches = [batch, ...smartphoneBatches].slice(0, 6);
   }
+  const activeIds = new Set(smartphoneBatches.map((entry) => entry.id));
+  triagedBatchIds = new Set([...triagedBatchIds].filter((id) => activeIds.has(id)));
 
   const metric = getDominantRecordMetric(deltas, summary);
   recordLens = {
@@ -625,6 +632,9 @@ function renderFalloutSurfaces() {
       ...visibleBatches.map((batch) => {
         const article = document.createElement("article");
         article.className = `phone-batch${batch.urgent ? " urgent" : ""} severity-${batch.severity}`;
+        if (triagedBatchIds.has(batch.id)) {
+          article.classList.add("triaged");
+        }
 
         const title = document.createElement("h3");
         title.textContent = `${batch.label} | ${formatTempo(batch.tempo)}`;
@@ -636,7 +646,27 @@ function renderFalloutSurfaces() {
           list.append(item);
         });
 
-        article.append(title, list);
+        const actions = document.createElement("div");
+        actions.className = "phone-batch-actions";
+
+        const triageButton = document.createElement("button");
+        triageButton.type = "button";
+        const isTriaged = triagedBatchIds.has(batch.id);
+        triageButton.textContent = isTriaged ? "Triaged" : "Triage message";
+        triageButton.disabled = isTriaged;
+        triageButton.addEventListener("click", () => {
+          triagedBatchIds.add(batch.id);
+          renderFalloutSurfaces();
+          if (latestSummary) {
+            renderRunHud(latestSummary);
+            const unresolvedUrgent = smartphoneBatches.filter((entry) => entry.urgent && !triagedBatchIds.has(entry.id)).length;
+            elements.phoneMeta.textContent = `triage ${unresolvedUrgent}`;
+          }
+          setStatus(batch.urgent ? "Urgent consequence triaged." : "Consequence triaged.");
+        });
+        actions.append(triageButton);
+
+        article.append(title, list, actions);
         return article;
       })
     );
@@ -1189,11 +1219,16 @@ function applyUrgencyHighlights(isUrgent) {
   }
 
   if (!isUrgent) {
+    elements.phoneAnchor.classList.remove("urgent-target");
     return;
   }
 
   elements.trayAnchor.classList.add("urgent-target");
   elements.nextAction?.classList.add("urgent");
+  const unresolvedUrgent = smartphoneBatches.some((entry) => entry.urgent && !triagedBatchIds.has(entry.id));
+  if (unresolvedUrgent) {
+    elements.phoneAnchor.classList.add("urgent-target");
+  }
   const primary = getPrimaryTaskTarget();
   if (primary.target instanceof HTMLElement) {
     primary.target.classList.add("urgent-target");
@@ -1338,10 +1373,12 @@ function refreshPackets() {
   maybeRenderInterrupt(summary, trayState);
   const isUrgent = Boolean(collisionQueueItems[0] && collisionQueueItems[0].priority <= 2)
     || trayState === "urgent"
-    || smartphoneBatches[0]?.urgent === true;
+    || smartphoneBatches.some((entry) => entry.urgent && !triagedBatchIds.has(entry.id));
   applyUrgencyHighlights(isUrgent);
   renderNextAction(trayState);
   renderRunHud(summary);
+  const unresolvedUrgent = smartphoneBatches.filter((entry) => entry.urgent && !triagedBatchIds.has(entry.id)).length;
+  elements.phoneMeta.textContent = `triage ${unresolvedUrgent}`;
 
   const topCollision = collisionQueueItems[0]?.type ?? "none";
   const cueKey = `${summary.currentTempo}:${topCollision}`;
@@ -1385,6 +1422,7 @@ async function boot() {
   timedDeferralCount = 0;
   runBriefsCompleted = 0;
   smartphoneBatches = [];
+  triagedBatchIds = new Set();
   recordLens = null;
   bubbleShadowLead = null;
   supplementItems = [];
