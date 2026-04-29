@@ -429,6 +429,12 @@ a:focus-visible {
   padding: 0.45rem 0.72rem;
 }
 
+.political-actions button.selected {
+  border-color: color-mix(in srgb, var(--accent) 58%, var(--line) 42%);
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
 .challenge-form {
   display: grid;
   gap: 0.5rem;

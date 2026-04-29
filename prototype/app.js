@@ -134,6 +134,7 @@ let timedDeferralCount = 0;
 let rapidRunEnabled = true;
 let runBriefsCompleted = 0;
 let triagedBatchIds = new Set();
+let politicalChoiceByPacketKey = new Map();
 
 function applyDebugMode() {
   document.body.classList.toggle("debug-mode", DEBUG_MODE);
@@ -342,6 +343,10 @@ function signedDelta(value) {
   return value > 0 ? `+${value}` : String(value);
 }
 
+function getPacketKey(packet, index) {
+  return `${packet.eventCard?.id ?? "none"}|${packet.challenge?.id ?? "none"}|${packet.scene?.id ?? "none"}|${index}`;
+}
+
 function extractSummaryDeltas(beforeSummary, afterSummary) {
   return {
     partyLoyaltyScore: afterSummary.partyLoyaltyScore - beforeSummary.partyLoyaltyScore,
@@ -486,6 +491,76 @@ function updateTimedDeferralCounter(action) {
     return timedDeferralCount;
   }
   return 0;
+}
+
+function pushManualSmartphoneBatch(batch) {
+  falloutBatchCounter += 1;
+  const entry = {
+    id: `batch-${falloutBatchCounter}`,
+    label: batch.label,
+    urgent: batch.urgent,
+    tempo: batch.tempo,
+    severity: batch.severity,
+    updates: batch.updates
+  };
+  smartphoneBatches = [entry, ...smartphoneBatches].slice(0, 6);
+  const activeIds = new Set(smartphoneBatches.map((item) => item.id));
+  triagedBatchIds = new Set([...triagedBatchIds].filter((id) => activeIds.has(id)));
+}
+
+function applyPoliticalOutcome(packet, correct, summary) {
+  const packetKey = getPacketKey(packet, activePacketIndex);
+  const choice = politicalChoiceByPacketKey.get(packetKey);
+  if (!choice) {
+    return;
+  }
+
+  if (choice === "steady") {
+    pushManualSmartphoneBatch(correct
+      ? {
+        label: "steady line held",
+        urgent: false,
+        tempo: summary.currentTempo,
+        severity: "elevated",
+        updates: [
+          "You held the steady line and backed it with accurate maths.",
+          "Team confidence rises as the brief stays coherent."
+        ]
+      }
+      : {
+        label: "steady line questioned",
+        urgent: true,
+        tempo: summary.currentTempo,
+        severity: "high",
+        updates: [
+          "You held the line but the weak maths answer undermined it.",
+          "Questions escalate unless the next brief lands cleanly."
+        ]
+      });
+    return;
+  }
+
+  pushManualSmartphoneBatch(correct
+    ? {
+      label: "hard line rewarded",
+      urgent: false,
+      tempo: summary.currentTempo,
+      severity: "elevated",
+      updates: [
+        "You took a hard line and the numbers held up.",
+        "Narrative pressure drops after a confident defence."
+      ]
+    }
+    : {
+      label: "hard line backlash",
+      urgent: true,
+      tempo: summary.currentTempo,
+      severity: "critical",
+      updates: [
+        "You took a hard line and the weak maths answer triggered backlash.",
+        "Urgent consequences are building; triage and recover quickly."
+      ]
+    });
 }
 
 function applyFalloutRouting(action) {
@@ -941,6 +1016,7 @@ function handleChallengeOutcome(packet, correct, numericAnswer) {
     })
   };
   applyFalloutRouting(lastAction);
+  applyPoliticalOutcome(packet, correct, lastAction.response.summary);
   runBriefsCompleted += 1;
   let autoAdvanced = false;
   if (rapidRunEnabled) {
@@ -1045,6 +1121,7 @@ function renderPacket(packet, index) {
   );
 
   if (packet.challenge) {
+    const packetKey = getPacketKey(packet, index);
     const timer = packet.challenge.timed && packet.challenge.timerSeconds
       ? `Timed: ${packet.challenge.timerSeconds}s`
       : `Mode: ${packet.challenge.mode}`;
@@ -1090,6 +1167,10 @@ function renderPacket(packet, index) {
     fallbackCorrect.classList.add("debug-only");
     fallbackCorrect.toggleAttribute("hidden", !DEBUG_MODE);
     fallbackCorrect.addEventListener("click", () => {
+      if (!politicalChoiceByPacketKey.get(packetKey)) {
+        setStatus("Choose a political call before submitting.");
+        return;
+      }
       if (!answerInput.reportValidity()) {
         return;
       }
@@ -1102,6 +1183,10 @@ function renderPacket(packet, index) {
     fallbackIncorrect.classList.add("debug-only");
     fallbackIncorrect.toggleAttribute("hidden", !DEBUG_MODE);
     fallbackIncorrect.addEventListener("click", () => {
+      if (!politicalChoiceByPacketKey.get(packetKey)) {
+        setStatus("Choose a political call before submitting.");
+        return;
+      }
       if (!answerInput.reportValidity()) {
         return;
       }
@@ -1110,6 +1195,44 @@ function renderPacket(packet, index) {
 
     actions.append(submitAnswer, fallbackCorrect, fallbackIncorrect);
     form.append(answerLabel, helper, actions);
+
+    const decisionSection = document.createElement("section");
+    decisionSection.className = "packet-section";
+
+    const decisionHeading = document.createElement("h3");
+    decisionHeading.textContent = "Political call";
+
+    const decisionBody = document.createElement("p");
+    decisionBody.textContent = "Choose your line before submitting. Maths quality determines whether this call stabilises or escalates fallout.";
+
+    const decisionActions = document.createElement("div");
+    decisionActions.className = "packet-actions political-actions";
+    const selectedChoice = politicalChoiceByPacketKey.get(packetKey);
+
+    const steadyLine = document.createElement("button");
+    steadyLine.type = "button";
+    steadyLine.textContent = "Steady line";
+    steadyLine.classList.toggle("selected", selectedChoice === "steady");
+    steadyLine.addEventListener("click", () => {
+      politicalChoiceByPacketKey.set(packetKey, "steady");
+      renderPacketFocus();
+      setStatus("Political call set: steady line.");
+    });
+
+    const hardLine = document.createElement("button");
+    hardLine.type = "button";
+    hardLine.textContent = "Hard line";
+    hardLine.classList.toggle("selected", selectedChoice === "hard");
+    hardLine.addEventListener("click", () => {
+      politicalChoiceByPacketKey.set(packetKey, "hard");
+      renderPacketFocus();
+      setStatus("Political call set: hard line.");
+    });
+
+    decisionActions.append(steadyLine, hardLine);
+    decisionSection.append(decisionHeading, decisionBody, decisionActions);
+    article.append(decisionSection);
+
     form.addEventListener("submit", (event) => {
       event.preventDefault();
       if (!answerInput.reportValidity()) {
@@ -1124,6 +1247,10 @@ function renderPacket(packet, index) {
       }
       if (correct === undefined) {
         setStatus("Couldn't grade that answer. Try a standard numeric format.");
+        return;
+      }
+      if (!politicalChoiceByPacketKey.get(packetKey)) {
+        setStatus("Choose a political call before submitting.");
         return;
       }
       handleChallengeOutcome(packet, correct, answerInput.value);
@@ -1442,6 +1569,7 @@ async function boot() {
   runBriefsCompleted = 0;
   smartphoneBatches = [];
   triagedBatchIds = new Set();
+  politicalChoiceByPacketKey = new Map();
   recordLens = null;
   bubbleShadowLead = null;
   supplementItems = [];
